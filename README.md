@@ -18,7 +18,7 @@ Sistema de gestión de ventas con control de stock, kardex, facturación y audit
 ## Ejecutar con Docker (recomendado)
 
 ```bash
-docker compose up -d --build
+DOCKER_BUILDKIT=1 docker compose up -d --build
 ```
 
 La app estará en `http://localhost:8080`.
