@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Inicio - App Ventas')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="row mb-5">
+    <div class="col-12 text-center">
+      <h1 class="mb-2">Bienvenido</h1>
+      <p class="text-muted">Sistema de gestion de ventas</p>
+    </div>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-3">
+      <a href="/usuarios" class="dashboard-card">
+        <div class="card-icon" style="background-color: var(--rp-iris);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h5>Usuarios</h5>
+        <p>Gestion de usuarios del sistema</p>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="/clientes" class="dashboard-card">
+        <div class="card-icon" style="background-color: var(--rp-pine);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h5>Clientes</h5>
+        <p>Registro de clientes</p>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="/productos" class="dashboard-card">
+        <div class="card-icon" style="background-color: var(--rp-gold);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <h5>Productos</h5>
+        <p>Inventario de productos</p>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="/ventas/nuevo" class="dashboard-card">
+        <div class="card-icon" style="background-color: var(--rp-love);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+        </div>
+        <h5>Ventas</h5>
+        <p>Registrar nuevas ventas</p>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

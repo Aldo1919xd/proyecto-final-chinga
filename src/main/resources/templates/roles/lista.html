@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Roles')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="page-header">
+    <h2>Roles</h2>
+    <a href="/roles/nuevo" class="btn btn-primary">Nuevo Rol</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="rol : ${roles}">
+          <td th:text="${rol.idRol}">1</td>
+          <td th:text="${rol.nombreRol}">Nombre</td>
+          <td>
+            <span th:if="${rol.estado}" class="badge bg-success">Activo</span>
+            <span th:unless="${rol.estado}" class="badge bg-danger">Inactivo</span>
+          </td>
+          <td>
+            <a th:href="@{/roles/editar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:href="@{/roles/permisos/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-info">Permisos</a>
+            <a th:href="@{/roles/eliminar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('Eliminar este rol?')">Eliminar</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

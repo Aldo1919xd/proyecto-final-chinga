@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Clientes')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="page-header">
+    <h2>Clientes</h2>
+    <a href="/clientes/nuevo" class="btn btn-primary">Nuevo Cliente</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Tipo Doc</th>
+          <th>Numero Doc</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="c : ${clientes}">
+          <td th:text="${c.codCliente}">1</td>
+          <td th:text="${c.tipoDocumento.descripcion}">DNI</td>
+          <td th:text="${c.numeroDocumento}">12345678</td>
+          <td th:text="${c.nombreCliente}">Nombre</td>
+          <td>
+            <span th:if="${c.estado}" class="badge bg-success">Activo</span>
+            <span th:unless="${c.estado}" class="badge bg-danger">Inactivo</span>
+          </td>
+          <td>
+            <a th:href="@{/clientes/editar/{id}(id=${c.codCliente})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:href="@{/clientes/eliminar/{id}(id=${c.codCliente})}" class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('Eliminar este cliente?')">Eliminar</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

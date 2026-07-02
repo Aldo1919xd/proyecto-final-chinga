@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Cliente')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2 th:text="${cliente.codCliente != null ? 'Editar Cliente' : 'Nuevo Cliente'}">Formulario</h2>
+      <form th:action="@{/clientes/guardar}" method="post" class="card-form" th:object="${cliente}">
+        <input type="hidden" name="codCliente" th:value="*{codCliente}">
+        <input type="hidden" name="estado" th:value="*{estado != null ? estado : true}">
+        <div class="mb-3">
+          <label class="form-label">Tipo Documento</label>
+          <select name="tipoDocumento.codTipoDocumento" class="form-select" required>
+            <option value="">Seleccione...</option>
+            <option th:each="td : ${tiposDocumento}" th:value="${td.codTipoDocumento}" th:text="${td.descripcion}"
+                    th:selected="${cliente.tipoDocumento != null && cliente.tipoDocumento.codTipoDocumento == td.codTipoDocumento}"></option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Numero Documento</label>
+          <input type="text" name="numeroDocumento" class="form-control" th:value="*{numeroDocumento}" required maxlength="15">
+          <div class="text-danger small" th:if="${#fields.hasErrors('numeroDocumento')}" th:errors="*{numeroDocumento}"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Razon Social</label>
+          <input type="text" name="razonSocial" class="form-control" th:value="*{razonSocial}" maxlength="150">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nombre Cliente</label>
+          <input type="text" name="nombreCliente" class="form-control" th:value="*{nombreCliente}" maxlength="150">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Fecha Nacimiento</label>
+          <input type="date" name="fechaNacimiento" class="form-control" th:value="*{fechaNacimiento}">
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <a href="/clientes" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

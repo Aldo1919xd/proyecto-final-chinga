@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Usuarios')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="page-header">
+    <h2>Usuarios</h2>
+    <a href="/usuarios/nuevo" class="btn btn-primary">Nuevo Usuario</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="u : ${usuarios}">
+          <td th:text="${u.idUsuario}">1</td>
+          <td th:text="${u.usuario}">usuario</td>
+          <td th:text="${u.rol.nombreRol}">Rol</td>
+          <td>
+            <span th:if="${u.estado}" class="badge bg-success">Activo</span>
+            <span th:unless="${u.estado}" class="badge bg-danger">Inactivo</span>
+          </td>
+          <td>
+            <a th:href="@{/usuarios/editar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:href="@{/usuarios/eliminar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('Eliminar este usuario?')">Eliminar</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

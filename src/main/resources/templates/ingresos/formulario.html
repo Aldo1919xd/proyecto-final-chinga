@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Ingreso de Productos')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2>Registrar Ingreso de Producto</h2>
+      <div th:if="${param.exito}" class="alert alert-success">Ingreso registrado correctamente</div>
+      <form th:action="@{/ingresos/guardar}" method="post" class="card-form">
+        <div class="mb-3">
+          <label class="form-label">Producto</label>
+          <select name="producto.codProducto" class="form-select" required>
+            <option value="">Seleccione...</option>
+            <option th:each="p : ${productos}" th:value="${p.codProducto}" th:text="${p.nombreProducto}"></option>
+          </select>
+        </div>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="form-label">Cantidad Unidades</label>
+            <input type="number" name="cantidadUnidad" class="form-control" value="0" min="0">
+          </div>
+          <div class="col">
+            <label class="form-label">Cantidad Fracciones</label>
+            <input type="number" name="cantidadFraccion" class="form-control" value="0" min="0">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Observacion</label>
+          <input type="text" name="observacion" class="form-control" maxlength="200">
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar Ingreso</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

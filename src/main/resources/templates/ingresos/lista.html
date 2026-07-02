@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Ingresos')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="page-header">
+    <h2>Ingresos</h2>
+    <a href="/ingresos/nuevo" class="btn btn-primary">Nuevo Ingreso</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Producto</th>
+          <th>Unidades</th>
+          <th>Fracciones</th>
+          <th>Observacion</th>
+          <th>Fecha</th>
+          <th>Usuario</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="i : ${ingresos}">
+          <td th:text="${i.codIngreso}">1</td>
+          <td th:text="${i.producto.nombreProducto}">Producto</td>
+          <td th:text="${i.cantidadUnidad}">0</td>
+          <td th:text="${i.cantidadFraccion}">0</td>
+          <td th:text="${i.observacion}">-</td>
+          <td th:text="${i.fechaHora}">2024-01-01</td>
+          <td th:text="${i.usuarioRegistro.usuario}">admin</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

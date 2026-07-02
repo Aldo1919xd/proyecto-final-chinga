@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Ventas')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="page-header">
+    <h2>Ventas</h2>
+    <a href="/ventas/nuevo" class="btn btn-primary">Nueva Venta</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Comprobante</th>
+          <th>Cliente</th>
+          <th>Subtotal</th>
+          <th>IGV</th>
+          <th>Total</th>
+          <th>Fecha</th>
+          <th>Usuario</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="v : ${ventas}">
+          <td th:text="${v.codVenta}">1</td>
+          <td th:text="${v.tipoComprobante} + ' ' + ${v.serie} + '-' + ${v.numeroCorrelativo}">F001-1</td>
+          <td th:text="${v.cliente.nombreCliente}">Cliente</td>
+          <td th:text="${v.subtotal}">0.00</td>
+          <td th:text="${v.igv}">0.00</td>
+          <td th:text="${v.total}">0.00</td>
+          <td th:text="${v.fechaHora}">2024-01-01</td>
+          <td th:text="${v.usuarioRegistro.usuario}">admin</td>
+          <td>
+            <span th:if="${v.estado}" class="badge bg-success">Activo</span>
+            <span th:unless="${v.estado}" class="badge bg-danger">Anulado</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

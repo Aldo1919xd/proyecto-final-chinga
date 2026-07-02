@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Categorias')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="page-header">
+    <h2>Categorias</h2>
+    <a href="/categorias/nuevo" class="btn btn-primary">Nueva Categoria</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table table-bordered table-hover">
+      <thead>
+        <tr>
+          <th>Codigo</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="c : ${categorias}">
+          <td th:text="${c.codCategoria}">1</td>
+          <td th:text="${c.nombreCategoria}">Categoria</td>
+          <td>
+            <span th:if="${c.estado}" class="badge bg-success">Activo</span>
+            <span th:unless="${c.estado}" class="badge bg-danger">Inactivo</span>
+          </td>
+          <td>
+            <a th:href="@{/categorias/editar/{id}(id=${c.codCategoria})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:href="@{/categorias/eliminar/{id}(id=${c.codCategoria})}" class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('Eliminar esta categoria?')">Eliminar</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

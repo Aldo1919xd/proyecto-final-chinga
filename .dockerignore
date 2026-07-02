@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+.sql/
+node_modules/
+.git/
+*.md
+*.pdf

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Usuario')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2 th:text="${usuario.idUsuario != null ? 'Editar Usuario' : 'Nuevo Usuario'}">Formulario</h2>
+      <form th:action="@{/usuarios/guardar}" method="post" class="card-form">
+        <input type="hidden" name="idUsuario" th:value="${usuario.idUsuario}">
+        <input type="hidden" name="estado" th:value="${usuario.estado != null ? usuario.estado : true}">
+        <div class="mb-3">
+          <label class="form-label">Usuario</label>
+          <input type="text" name="usuario" class="form-control" th:value="${usuario.usuario}" required maxlength="30">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control"
+                 th:placeholder="${usuario.idUsuario != null ? 'Dejar vacio para mantener' : 'Ingrese password'}"
+                 th:required="${usuario.idUsuario == null}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Rol</label>
+          <select name="rol.idRol" class="form-select" required>
+            <option value="">Seleccione...</option>
+            <option th:each="r : ${roles}" th:value="${r.idRol}" th:text="${r.nombreRol}"
+                    th:selected="${usuario.rol != null && usuario.rol.idRol == r.idRol}"></option>
+          </select>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <a href="/usuarios" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

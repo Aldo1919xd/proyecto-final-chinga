@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Rol')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2 th:text="${rol.idRol != null ? 'Editar Rol' : 'Nuevo Rol'}">Formulario Rol</h2>
+      <form th:action="@{/roles/guardar}" method="post" class="card-form">
+        <input type="hidden" name="idRol" th:value="${rol.idRol}">
+        <input type="hidden" name="estado" th:value="${rol.estado != null ? rol.estado : true}">
+        <div class="mb-3">
+          <label class="form-label">Nombre del Rol</label>
+          <input type="text" name="nombreRol" class="form-control" th:value="${rol.nombreRol}" required maxlength="40">
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <a href="/roles" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

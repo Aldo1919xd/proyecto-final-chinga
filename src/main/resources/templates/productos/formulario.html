@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Producto')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <h2 th:text="${producto.codProducto != null ? 'Editar Producto' : 'Nuevo Producto'}">Formulario</h2>
+      <form th:action="@{/productos/guardar}" method="post" class="card-form">
+        <input type="hidden" name="codProducto" th:value="${producto.codProducto}">
+        <input type="hidden" name="estado" th:value="${producto.estado != null ? producto.estado : true}">
+        <input type="hidden" name="version" th:value="${producto.version}">
+        <div class="mb-3">
+          <label class="form-label">Nombre Producto</label>
+          <input type="text" name="nombreProducto" class="form-control" th:value="${producto.nombreProducto}" required maxlength="120">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Categoria</label>
+          <select name="categoria.codCategoria" class="form-select" required>
+            <option value="">Seleccione...</option>
+            <option th:each="c : ${categorias}" th:value="${c.codCategoria}" th:text="${c.nombreCategoria}"
+                    th:selected="${producto.categoria != null && producto.categoria.codCategoria == c.codCategoria}"></option>
+          </select>
+        </div>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="form-label">Precio Unitario</label>
+            <input type="number" step="0.01" name="precioUnitario" class="form-control"
+                   th:value="${producto.precioUnitario}" required>
+          </div>
+          <div class="col">
+            <label class="form-label">Precio Fraccion</label>
+            <input type="number" step="0.01" name="precioFraccion" class="form-control"
+                   th:value="${producto.precioFraccion}" required>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col">
+            <label class="form-label">Stock Unidades</label>
+            <input type="number" name="cantidadUnidad" class="form-control"
+                   th:value="${producto.cantidadUnidad}" required>
+          </div>
+          <div class="col">
+            <label class="form-label">Stock Fracciones</label>
+            <input type="number" name="cantidadFraccion" class="form-control"
+                   th:value="${producto.cantidadFraccion}" required>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <a href="/productos" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>
