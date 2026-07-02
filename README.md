@@ -18,10 +18,12 @@ Sistema de gestión de ventas con control de stock, kardex, facturación y audit
 ## Ejecutar con Docker (recomendado)
 
 ```bash
-DOCKER_BUILDKIT=1 docker compose up -d --build
+docker compose up -d --build
 ```
 
 La app estará en `http://localhost:8080`.
+
+> **Nota:** Si solo cambias código fuente, `docker compose up -d --build` recompila desde cero. Para desarrollo más rápido usa `./mvnw spring-boot:run` local (con MariaDB corriendo).
 
 Para detener:
 
