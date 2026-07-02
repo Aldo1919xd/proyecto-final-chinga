@@ -47,6 +47,9 @@ public class VentaService {
     @Transactional
     public VentaCabecera registrarVenta(VentaCabecera cabecera, java.util.List<VentaDetalle> detalles,
                                         Usuario usuarioActual, HttpServletRequest request) {
+        if (detalles == null || detalles.isEmpty()) {
+            throw new IllegalArgumentException("Debe agregar al menos un producto a la venta");
+        }
         Cliente cliente = clienteRepository.findById(cabecera.getCliente().getCodCliente()).orElseThrow();
         String tipoDoc = cliente.getTipoDocumento().getDescripcion();
         String tipoComprobante;

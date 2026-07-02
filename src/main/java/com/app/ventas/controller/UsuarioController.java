@@ -31,14 +31,20 @@ public class UsuarioController {
 
     @GetMapping("/nuevo")
     public String nuevo(Model model) {
-        model.addAttribute("usuario", new Usuario());
+        model.addAttribute("user", new Usuario());
         model.addAttribute("roles", rolService.listarActivos());
         return "usuarios/formulario";
     }
 
     @PostMapping("/guardar")
-    public String guardar(@Valid Usuario usuario, BindingResult result, Model model,
-                          Authentication auth, HttpServletRequest request) {
+    public String guardar(@Valid @ModelAttribute("user") Usuario usuario, BindingResult result,
+                          Model model, Authentication auth, HttpServletRequest request) {
+        boolean esNuevo = usuario.getIdUsuario() == null;
+
+        if (esNuevo && (usuario.getPassword() == null || usuario.getPassword().isBlank())) {
+            result.rejectValue("password", "error.usuario", "La contrasena es obligatoria");
+        }
+
         if (result.hasErrors()) {
             model.addAttribute("roles", rolService.listarActivos());
             return "usuarios/formulario";
@@ -50,7 +56,7 @@ public class UsuarioController {
 
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable Integer id, Model model) {
-        model.addAttribute("usuario", usuarioService.buscarPorId(id).orElseThrow());
+        model.addAttribute("user", usuarioService.buscarPorId(id).orElseThrow());
         model.addAttribute("roles", rolService.listarActivos());
         return "usuarios/formulario";
     }

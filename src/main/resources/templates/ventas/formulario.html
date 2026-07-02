@@ -7,6 +7,7 @@
 <div class="container content">
   <h2>Registrar Venta</h2>
   <div th:if="${param.exito}" class="alert alert-success">Venta registrada correctamente</div>
+  <div th:if="${param.error != null and param.error[0] == 'sinProductos'}" class="alert alert-danger">Debe agregar al menos un producto a la venta</div>
   <form th:action="@{/ventas/guardar}" method="post" class="card-form">
     <div class="row mb-3">
       <div class="col">

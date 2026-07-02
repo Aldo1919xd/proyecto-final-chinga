@@ -2,6 +2,7 @@ package com.app.ventas.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -18,10 +19,10 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 30)
     private String usuario;
 
-    @NotBlank(message = "La contrasena es obligatoria")
     @Column(nullable = false, length = 255)
     private String password;
 
+    @NotNull(message = "Debe seleccionar un rol")
     @ManyToOne
     @JoinColumn(name = "idRol", nullable = false)
     private Rol rol;

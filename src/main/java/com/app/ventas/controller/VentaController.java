@@ -55,15 +55,17 @@ public class VentaController {
                           Authentication auth, HttpServletRequest request) {
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
 
+        if (productoId == null || productoId.isEmpty()) {
+            return "redirect:/ventas/nuevo?error=sinProductos";
+        }
+
         List<VentaDetalle> detalles = new ArrayList<>();
-        if (productoId != null) {
-            for (int i = 0; i < productoId.size(); i++) {
-                VentaDetalle detalle = new VentaDetalle();
-                detalle.setProducto(productoService.buscarPorId(productoId.get(i)).orElseThrow());
-                detalle.setCantidad(cantidad != null && i < cantidad.size() ? cantidad.get(i) : 1);
-                detalle.setTipoVenta(tipoVenta != null && i < tipoVenta.size() ? tipoVenta.get(i) : "UNIDAD");
-                detalles.add(detalle);
-            }
+        for (int i = 0; i < productoId.size(); i++) {
+            VentaDetalle detalle = new VentaDetalle();
+            detalle.setProducto(productoService.buscarPorId(productoId.get(i)).orElseThrow());
+            detalle.setCantidad(cantidad != null && i < cantidad.size() ? cantidad.get(i) : 1);
+            detalle.setTipoVenta(tipoVenta != null && i < tipoVenta.size() ? tipoVenta.get(i) : "UNIDAD");
+            detalles.add(detalle);
         }
 
         ventaService.registrarVenta(cabecera, detalles, actual, request);
