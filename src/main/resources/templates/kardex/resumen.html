@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Kardex')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <h2>KARDEX - RESUMEN POR PRODUCTO</h2>
+  
+  <form action="/kardex" method="get" class="row g-3 align-items-center mb-4">
+    <div class="col-auto">
+      <label class="col-form-label">Producto:</label>
+    </div>
+    <div class="col-md-4">
+      <select name="productoId" class="form-select" required>
+        <option value="">-- Seleccione Producto --</option>
+        <option th:each="p : ${productos}" th:value="${p.codProducto}" th:text="${p.codProducto + ' - ' + p.nombreProducto}" th:selected="${param.productoId != null and param.productoId[0] == p.codProducto.toString()}"></option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary">Buscar</button>
+    </div>
+  </form>
+
+  <div th:if="${productoSeleccionado != null}">
+    <div class="row text-center mb-4">
+      <div class="col-md-6">
+        <div class="card bg-light">
+          <div class="card-body">
+            <h6 class="text-success">Saldo Unidad</h6>
+            <h4 th:text="${productoSeleccionado.cantidadUnidad}">0</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card bg-light">
+          <div class="card-body">
+            <h6 class="text-primary">Saldo Fracción</h6>
+            <h4 th:text="${productoSeleccionado.cantidadFraccion}">0</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="table-wrapper">
+      <table class="table table-bordered table-hover text-center">
+        <thead class="table-light">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo Oper.</th>
+            <th>Documento</th>
+            <th class="text-success">Entrada (U)</th>
+            <th class="text-danger">Salida (U)</th>
+            <th class="text-success">Entrada (F)</th>
+            <th class="text-danger">Salida (F)</th>
+            <th>Saldo U</th>
+            <th>Saldo F</th>
+            <th>Obs.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="k : ${movimientos}">
+            <td th:text="${#temporals.format(k.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+            <td th:text="${k.tipoOperacion.descripcion}">Oper</td>
+            <td th:text="${k.codDocumento}">Doc</td>
+            
+            <td class="text-success" th:text="${k.tipoOperacion.codTipoOperacion == 1 ? k.cantidadMovimiento : 0}">0</td>
+            <td class="text-danger" th:text="${k.tipoOperacion.codTipoOperacion == 2 ? k.cantidadMovimiento : 0}">0</td>
+            
+            <td class="text-success">0</td>
+            <td class="text-danger">0</td>
+            
+            <td th:text="${k.saldoUnitario}">0</td>
+            <td th:text="${k.saldoFraccionario}">0</td>
+            <td th:text="${k.observacion}"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

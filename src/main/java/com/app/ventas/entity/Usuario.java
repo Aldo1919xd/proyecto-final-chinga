@@ -37,7 +37,11 @@ public class Usuario {
     @JoinColumn(name = "usuarioCreacion")
     private Usuario usuarioCreacion;
 
+    @Column(name = "fechaModificacion")
     private LocalDateTime fechaModificacion;
+
+    @Column(name = "secretKey2fa")
+    private String secretKey2fa;
 
     public Usuario() {}
 
@@ -61,4 +65,6 @@ public class Usuario {
     public void setUsuarioCreacion(Usuario usuarioCreacion) { this.usuarioCreacion = usuarioCreacion; }
     public LocalDateTime getFechaModificacion() { return fechaModificacion; }
     public void setFechaModificacion(LocalDateTime fechaModificacion) { this.fechaModificacion = fechaModificacion; }
+    public String getSecretKey2fa() { return secretKey2fa; }
+    public void setSecretKey2fa(String secretKey2fa) { this.secretKey2fa = secretKey2fa; }
 }

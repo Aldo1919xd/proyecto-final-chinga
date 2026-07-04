@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragmentos :: head('Auditoría')">
+<body>
+<div th:replace="fragmentos :: navbar"></div>
+
+<div class="container content">
+  <h2>AUDITORÍA - VENTAS</h2>
+  
+  <div class="card mb-4">
+    <div class="card-body bg-light">
+      <form action="/auditoria" method="get" class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Módulo</label>
+          <select name="modulo" class="form-select">
+            <option value="">Todos</option>
+            <option value="Ventas" th:selected="${param.modulo != null and param.modulo[0] == 'Ventas'}">Ventas</option>
+            <option value="Maestras" th:selected="${param.modulo != null and param.modulo[0] == 'Maestras'}">Maestras</option>
+            <option value="Seguridad" th:selected="${param.modulo != null and param.modulo[0] == 'Seguridad'}">Seguridad</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Tipo de Operación</label>
+          <select name="operacion" class="form-select">
+            <option value="">Todas</option>
+            <option value="INSERT" th:selected="${param.operacion != null and param.operacion[0] == 'INSERT'}">Inserción</option>
+            <option value="UPDATE" th:selected="${param.operacion != null and param.operacion[0] == 'UPDATE'}">Actualización</option>
+            <option value="DELETE" th:selected="${param.operacion != null and param.operacion[0] == 'DELETE'}">Eliminación</option>
+          </select>
+        </div>
+        <div class="col-md-3 align-self-end">
+          <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+          <a href="/auditoria" class="btn btn-outline-secondary">Limpiar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="table-wrapper table-responsive">
+    <table class="table table-bordered table-hover table-sm text-center" style="font-size: 0.9rem;">
+      <thead class="table-dark">
+        <tr>
+          <th>Fecha y Hora</th>
+          <th>Usuario</th>
+          <th>Módulo</th>
+          <th>Tabla</th>
+          <th>Operación</th>
+          <th>Registro Afectado</th>
+          <th>IP Origen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="a : ${registros}">
+          <td th:text="${#temporals.format(a.fechaHora, 'dd/MM/yyyy HH:mm:ss')}"></td>
+          <td th:text="${a.usuario.usuario}"></td>
+          <td th:text="${a.modulo}"></td>
+          <td th:text="${a.tablaAfectada}"></td>
+          <td>
+            <span class="badge bg-success" th:if="${a.operacion == 'INSERT'}">Inserción</span>
+            <span class="badge bg-primary" th:if="${a.operacion == 'UPDATE'}">Actualización</span>
+            <span class="badge bg-danger" th:if="${a.operacion == 'DELETE'}">Eliminación</span>
+          </td>
+          <td class="text-start">
+            <small class="text-muted d-block">ID: [[${a.codigoRegistro}]]</small>
+            <small th:if="${a.valorNuevo}" th:text="${a.valorNuevo}"></small>
+          </td>
+          <td th:text="${a.ipOrigen ?: 'Local'}"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="fragmentos :: scripts"></div>
+</body>
+</html>

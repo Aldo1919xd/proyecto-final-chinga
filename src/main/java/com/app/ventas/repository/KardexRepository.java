@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface KardexRepository extends JpaRepository<Kardex, Integer> {
     List<Kardex> findByProductoCodProductoOrderByFechaHoraAsc(Integer codProducto);
+
+    List<Kardex> findByProductoCodProductoOrderByFechaHoraDesc(Integer codProducto);
 }

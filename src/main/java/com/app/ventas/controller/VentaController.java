@@ -13,6 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,8 +55,20 @@ public class VentaController {
                           @RequestParam(required = false) List<Integer> productoId,
                           @RequestParam(required = false) List<Integer> cantidad,
                           @RequestParam(required = false) List<String> tipoVenta,
+                          @RequestParam(required = false) Integer otpCode,
                           Authentication auth, HttpServletRequest request) {
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
+
+        if (actual.getSecretKey2fa() != null && !actual.getSecretKey2fa().isEmpty()) {
+            if (otpCode == null) {
+                return "redirect:/ventas/nuevo?error=otpRequerido";
+            }
+            GoogleAuthenticator gAuth = new GoogleAuthenticator();
+            boolean isCodeValid = gAuth.authorize(actual.getSecretKey2fa(), otpCode);
+            if (!isCodeValid) {
+                return "redirect:/ventas/nuevo?error=otpInvalido";
+            }
+        }
 
         if (productoId == null || productoId.isEmpty()) {
             return "redirect:/ventas/nuevo?error=sinProductos";

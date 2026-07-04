@@ -54,6 +54,7 @@ CREATE TABLE Usuario (
     fechaRegistro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuarioCreacion INT,
     fechaModificacion TIMESTAMP NULL,
+    secretKey2fa VARCHAR(255),
     FOREIGN KEY (idRol) REFERENCES Rol(idRol),
     FOREIGN KEY (usuarioCreacion) REFERENCES Usuario(idUsuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
