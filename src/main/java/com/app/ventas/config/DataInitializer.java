@@ -13,16 +13,22 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final TipoDocumentoRepository tipoDocumentoRepository;
     private final TipoOperacionRepository tipoOperacionRepository;
+    private final FuncionalidadRepository funcionalidadRepository;
+    private final RolFuncionalidadRepository rolFuncionalidadRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(RolRepository rolRepository, UsuarioRepository usuarioRepository,
                            TipoDocumentoRepository tipoDocumentoRepository,
                            TipoOperacionRepository tipoOperacionRepository,
+                           FuncionalidadRepository funcionalidadRepository,
+                           RolFuncionalidadRepository rolFuncionalidadRepository,
                            PasswordEncoder passwordEncoder) {
         this.rolRepository = rolRepository;
         this.usuarioRepository = usuarioRepository;
         this.tipoDocumentoRepository = tipoDocumentoRepository;
         this.tipoOperacionRepository = tipoOperacionRepository;
+        this.funcionalidadRepository = funcionalidadRepository;
+        this.rolFuncionalidadRepository = rolFuncionalidadRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -75,6 +81,30 @@ public class DataInitializer implements CommandLineRunner {
                 TipoOperacion to = new TipoOperacion();
                 to.setDescripcion(ops[i]);
                 tipoOperacionRepository.save(to);
+            }
+        }
+
+        if (funcionalidadRepository.count() == 0) {
+            Funcionalidad kardex = new Funcionalidad();
+            kardex.setNombre("Kardex");
+            funcionalidadRepository.save(kardex);
+
+            Funcionalidad auditoria = new Funcionalidad();
+            auditoria.setNombre("Auditoría");
+            funcionalidadRepository.save(auditoria);
+
+            Rol superRol = rolRepository.findByEstadoTrue().get(0);
+
+            for (Funcionalidad f : funcionalidadRepository.findAll()) {
+                RolFuncionalidad rf = new RolFuncionalidad();
+                rf.setRol(superRol);
+                rf.setFuncionalidad(f);
+                rf.setVer(true);
+                rf.setCrear(true);
+                rf.setEditar(true);
+                rf.setEliminar(true);
+                rf.setImprimir(true);
+                rolFuncionalidadRepository.save(rf);
             }
         }
     }
