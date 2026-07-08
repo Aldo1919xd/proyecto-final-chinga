@@ -56,18 +56,8 @@ public class DataInitializer implements CommandLineRunner {
             rolRepository.save(contabilidad);
         }
 
-        if (usuarioRepository.count() == 0) {
-            Usuario admin = new Usuario();
-            admin.setUsuario("admin");
-            admin.setPassword(passwordEncoder.encode("admin"));
-            admin.setRol(rolRepository.findByEstadoTrue().get(0));
-            admin.setEstado(true);
-            usuarioRepository.save(admin);
-        }
-
         if (tipoDocumentoRepository.count() == 0) {
-            String[] docs = {"DNI", "RUC", "CE", "Pasaporte"};
-            for (String d : docs) {
+            for (String d : new String[]{"DNI", "RUC", "CE", "Pasaporte"}) {
                 TipoDocumento td = new TipoDocumento();
                 td.setDescripcion(d);
                 td.setEstado(true);
@@ -76,36 +66,101 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (tipoOperacionRepository.count() == 0) {
-            String[] ops = {"Ingreso", "Venta", "Extorno", "Ajuste"};
-            for (int i = 0; i < ops.length; i++) {
+            for (String op : new String[]{"Ingreso", "Venta", "Extorno", "Ajuste"}) {
                 TipoOperacion to = new TipoOperacion();
-                to.setDescripcion(ops[i]);
+                to.setDescripcion(op);
                 tipoOperacionRepository.save(to);
             }
         }
 
         if (funcionalidadRepository.count() == 0) {
-            Funcionalidad kardex = new Funcionalidad();
-            kardex.setNombre("Kardex");
-            funcionalidadRepository.save(kardex);
-
-            Funcionalidad auditoria = new Funcionalidad();
-            auditoria.setNombre("Auditoría");
-            funcionalidadRepository.save(auditoria);
-
-            Rol superRol = rolRepository.findByEstadoTrue().get(0);
-
-            for (Funcionalidad f : funcionalidadRepository.findAll()) {
-                RolFuncionalidad rf = new RolFuncionalidad();
-                rf.setRol(superRol);
-                rf.setFuncionalidad(f);
-                rf.setVer(true);
-                rf.setCrear(true);
-                rf.setEditar(true);
-                rf.setEliminar(true);
-                rf.setImprimir(true);
-                rolFuncionalidadRepository.save(rf);
+            for (String nombre : new String[]{"Dashboard", "Usuarios", "Roles",
+                    "Clientes", "Categorias", "Productos", "Ingresos",
+                    "Ventas", "Kardex", "Auditoria"}) {
+                Funcionalidad f = new Funcionalidad();
+                f.setNombre(nombre);
+                funcionalidadRepository.save(f);
             }
+        }
+
+        if (rolFuncionalidadRepository.count() == 0) {
+            var roles = rolRepository.findAll();
+            var funcionalidades = funcionalidadRepository.findAll();
+
+            for (Rol r : roles) {
+                for (Funcionalidad f : funcionalidadRepository.findAll()) {
+                    RolFuncionalidad rf = new RolFuncionalidad();
+                    rf.setRol(r);
+                    rf.setFuncionalidad(f);
+                    rf.setVer(true);
+
+                    if (r.getIdRol() == 1) {
+                        rf.setCrear(true);
+                        rf.setEditar(true);
+                        rf.setEliminar(true);
+                        if (f.getNombre().equals("Dashboard") || f.getNombre().equals("Kardex")
+                                || f.getNombre().equals("Auditoria")) {
+                            rf.setEliminar(false);
+                            rf.setEditar(false);
+                            rf.setCrear(false);
+                        }
+                        if (f.getNombre().equals("Clientes") || f.getNombre().equals("Productos")
+                                || f.getNombre().equals("Ventas") || f.getNombre().equals("Kardex")) {
+                            rf.setImprimir(true);
+                        }
+                    } else if (r.getIdRol() == 2) {
+                        if (!f.getNombre().equals("Clientes") && !f.getNombre().equals("Productos")
+                                && !f.getNombre().equals("Ventas") && !f.getNombre().equals("Dashboard")
+                                && !f.getNombre().equals("Kardex")) {
+                            rf.setVer(false);
+                        }
+                        if (f.getNombre().equals("Clientes")) {
+                            rf.setCrear(true);
+                            rf.setEditar(true);
+                        }
+                        if (f.getNombre().equals("Ventas")) {
+                            rf.setCrear(true);
+                            rf.setImprimir(true);
+                        }
+                        if (f.getNombre().equals("Productos") || f.getNombre().equals("Kardex")) {
+                            rf.setImprimir(true);
+                        }
+                    } else if (r.getIdRol() == 3) {
+                        if (!f.getNombre().equals("Productos") && !f.getNombre().equals("Categorias")
+                                && !f.getNombre().equals("Ingresos") && !f.getNombre().equals("Kardex")
+                                && !f.getNombre().equals("Dashboard")) {
+                            rf.setVer(false);
+                        }
+                        if (f.getNombre().equals("Productos") || f.getNombre().equals("Categorias")
+                                || f.getNombre().equals("Ingresos")) {
+                            rf.setCrear(true);
+                            rf.setEditar(true);
+                        }
+                        if (f.getNombre().equals("Productos") || f.getNombre().equals("Kardex")) {
+                            rf.setImprimir(true);
+                        }
+                    } else if (r.getIdRol() == 4) {
+                        if (!f.getNombre().equals("Dashboard") && !f.getNombre().equals("Ventas")
+                                && !f.getNombre().equals("Kardex") && !f.getNombre().equals("Auditoria")) {
+                            rf.setVer(false);
+                        }
+                        if (f.getNombre().equals("Ventas") || f.getNombre().equals("Kardex")) {
+                            rf.setImprimir(true);
+                        }
+                    }
+                    rolFuncionalidadRepository.save(rf);
+                }
+            }
+        }
+
+        if (usuarioRepository.count() == 0) {
+            Rol superRol = rolRepository.findByEstadoTrue().get(0);
+            Usuario admin = new Usuario();
+            admin.setUsuario("admin");
+            admin.setPassword(passwordEncoder.encode("admin"));
+            admin.setRol(superRol);
+            admin.setEstado(true);
+            usuarioRepository.save(admin);
         }
     }
 }

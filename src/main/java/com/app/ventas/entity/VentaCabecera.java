@@ -12,7 +12,8 @@ public class VentaCabecera {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer codVenta;
 
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaHora;
 
     @ManyToOne
@@ -44,8 +45,9 @@ public class VentaCabecera {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    @Column(updatable = false)
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    @Column(insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fechaRegistro;
 
     @ManyToOne
     @JoinColumn(name = "usuarioRegistro")

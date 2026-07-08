@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -53,12 +52,10 @@ public class IngresoService {
         kardex.setCantidadFinal(producto.getCantidadUnidad());
         kardex.setSaldoUnitario(producto.getCantidadUnidad());
         kardex.setSaldoFraccionario(producto.getCantidadFraccion());
-        kardex.setFechaHora(LocalDateTime.now());
         kardex.setObservacion(ingreso.getObservacion());
         kardex.setUsuarioRegistro(usuarioActual);
         kardexRepository.save(kardex);
 
-        ingreso.setFechaHora(LocalDateTime.now());
         ingreso.setUsuarioRegistro(usuarioActual);
         IngresoProducto guardado = ingresoRepository.save(ingreso);
 

@@ -1,6 +1,7 @@
 package com.app.ventas.controller;
 
 import com.app.ventas.entity.Cliente;
+import com.app.ventas.entity.TipoDocumento;
 import com.app.ventas.entity.Usuario;
 import com.app.ventas.service.ClienteService;
 import com.app.ventas.service.TipoDocumentoService;
@@ -13,8 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Controller
 @RequestMapping("/clientes")
@@ -47,12 +46,47 @@ public class ClienteController {
     @PostMapping("/guardar")
     public String guardar(@Valid Cliente cliente, BindingResult result, Model model,
                           Authentication auth, HttpServletRequest request) {
+        if (cliente.getNombreCliente() == null || cliente.getNombreCliente().isBlank()) {
+            if (cliente.getRazonSocial() == null || cliente.getRazonSocial().isBlank()) {
+                result.rejectValue("nombreCliente", "error.cliente",
+                        "Debe ingresar al menos un nombre o razon social");
+            }
+        }
+
+        if (cliente.getNumeroDocumento() != null && cliente.getTipoDocumento() != null
+                && cliente.getTipoDocumento().getCodTipoDocumento() != null) {
+            Integer tipoId = cliente.getTipoDocumento().getCodTipoDocumento();
+            String doc = cliente.getNumeroDocumento();
+            String descripcion = switch (tipoId) {
+                case 1 -> "DNI";
+                case 2 -> "RUC";
+                case 3 -> "CE";
+                default -> null;
+            };
+            if ("DNI".equals(descripcion) && !doc.matches("\\d{8}")) {
+                result.rejectValue("numeroDocumento", "error.cliente",
+                        "El DNI debe tener exactamente 8 digitos");
+            } else if ("RUC".equals(descripcion) && !doc.matches("\\d{11}")) {
+                result.rejectValue("numeroDocumento", "error.cliente",
+                        "El RUC debe tener exactamente 11 digitos");
+            } else if ("CE".equals(descripcion) && !doc.matches("[a-zA-Z0-9]{1,12}")) {
+                result.rejectValue("numeroDocumento", "error.cliente",
+                        "El CE debe tener maximo 12 caracteres alfanumericos");
+            }
+        }
+
         if (result.hasErrors()) {
             model.addAttribute("tiposDocumento", tipoDocumentoService.listarActivos());
             return "clientes/formulario";
         }
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
-        clienteService.guardar(cliente, actual, request);
+        try {
+            clienteService.guardar(cliente, actual, request);
+        } catch (RuntimeException e) {
+            model.addAttribute("tiposDocumento", tipoDocumentoService.listarActivos());
+            model.addAttribute("error", e.getMessage());
+            return "clientes/formulario";
+        }
         return "redirect:/clientes";
     }
 

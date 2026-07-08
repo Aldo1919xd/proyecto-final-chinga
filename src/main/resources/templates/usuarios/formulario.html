@@ -11,30 +11,37 @@
       <form th:action="@{/usuarios/guardar}" method="post" class="card-form" th:object="${user}">
         <input type="hidden" name="idUsuario" th:value="${user.idUsuario}">
         <input type="hidden" name="estado" th:value="${user.estado != null ? user.estado : true}">
-        <div class="mb-3">
-          <label class="form-label">Usuario</label>
-          <input type="text" name="usuario" class="form-control" th:value="${user.usuario}"
-                 th:errorclass="is-invalid" required maxlength="30">
-          <div class="invalid-feedback" th:errors="*{usuario}"></div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Usuario</label>
+            <input type="text" name="usuario" class="form-control sin-especiales"
+                   th:value="${user.usuario}" th:errorclass="is-invalid"
+                   required maxlength="30" data-val="username">
+            <div class="invalid-feedback" th:errors="*{usuario}"></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Rol</label>
+            <select name="rol.idRol" class="form-select" th:errorclass="is-invalid" required>
+              <option value="">Seleccione...</option>
+              <option th:each="r : ${roles}" th:value="${r.idRol}" th:text="${r.nombreRol}"
+                      th:selected="${user.rol != null && user.rol.idRol == r.idRol}"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{rol}"></div>
+          </div>
         </div>
+
         <div class="mb-3">
           <label class="form-label">Password</label>
           <input type="password" name="password" class="form-control"
                  th:errorclass="is-invalid"
                  th:placeholder="${user.idUsuario != null ? 'Dejar vacio para mantener' : 'Ingrese password'}"
-                 th:required="${user.idUsuario == null}">
+                 th:required="${user.idUsuario == null}"
+                 data-val="password">
           <div class="invalid-feedback" th:errors="*{password}"></div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Rol</label>
-          <select name="rol.idRol" class="form-select" th:errorclass="is-invalid" required>
-            <option value="">Seleccione...</option>
-            <option th:each="r : ${roles}" th:value="${r.idRol}" th:text="${r.nombreRol}"
-                    th:selected="${user.rol != null && user.rol.idRol == r.idRol}"></option>
-          </select>
-          <div class="invalid-feedback" th:errors="*{rol}"></div>
-        </div>
-        <div class="d-flex gap-2">
+
+        <div class="d-flex gap-2 mt-4">
           <button type="submit" class="btn btn-primary">Guardar</button>
           <a href="/usuarios" class="btn btn-secondary">Cancelar</a>
         </div>

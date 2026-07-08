@@ -8,13 +8,11 @@ import com.app.ventas.service.ProductoService;
 import com.app.ventas.service.UsuarioService;
 import com.app.ventas.service.VentaService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import com.warrenstrange.googleauth.GoogleAuthenticator;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +26,6 @@ public class VentaController {
     private final ProductoService productoService;
     private final UsuarioService usuarioService;
 
-    @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("ventas", ventaService.listarTodas());
-        return "ventas/lista";
-    }
-
     public VentaController(VentaService ventaService, ClienteService clienteService,
                            ProductoService productoService, UsuarioService usuarioService) {
         this.ventaService = ventaService;
@@ -42,8 +34,20 @@ public class VentaController {
         this.usuarioService = usuarioService;
     }
 
+    @GetMapping
+    public String listar(Model model, Authentication auth, HttpSession session) {
+        if (requiereVerificacion2fa(auth, session)) {
+            return "redirect:/usuarios/2fa/verificar-sesion?redirect=/ventas";
+        }
+        model.addAttribute("ventas", ventaService.listarTodas());
+        return "ventas/lista";
+    }
+
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
+    public String nuevo(Model model, Authentication auth, HttpSession session) {
+        if (requiereVerificacion2fa(auth, session)) {
+            return "redirect:/usuarios/2fa/verificar-sesion?redirect=/ventas/nuevo";
+        }
         model.addAttribute("venta", new VentaCabecera());
         model.addAttribute("clientes", clienteService.listarActivos());
         model.addAttribute("productos", productoService.listarActivos());
@@ -55,19 +59,11 @@ public class VentaController {
                           @RequestParam(required = false) List<Integer> productoId,
                           @RequestParam(required = false) List<Integer> cantidad,
                           @RequestParam(required = false) List<String> tipoVenta,
-                          @RequestParam(required = false) Integer otpCode,
-                          Authentication auth, HttpServletRequest request) {
+                          Authentication auth, HttpServletRequest request, HttpSession session) {
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
 
-        if (actual.getSecretKey2fa() != null && !actual.getSecretKey2fa().isEmpty()) {
-            if (otpCode == null) {
-                return "redirect:/ventas/nuevo?error=otpRequerido";
-            }
-            GoogleAuthenticator gAuth = new GoogleAuthenticator();
-            boolean isCodeValid = gAuth.authorize(actual.getSecretKey2fa(), otpCode);
-            if (!isCodeValid) {
-                return "redirect:/ventas/nuevo?error=otpInvalido";
-            }
+        if (cabecera.getCliente() == null || cabecera.getCliente().getCodCliente() == null) {
+            return "redirect:/ventas/nuevo?error=sinCliente";
         }
 
         if (productoId == null || productoId.isEmpty()) {
@@ -76,14 +72,56 @@ public class VentaController {
 
         List<VentaDetalle> detalles = new ArrayList<>();
         for (int i = 0; i < productoId.size(); i++) {
+            if (productoId.get(i) == null) continue;
+
+            var prodOpt = productoService.buscarPorId(productoId.get(i));
+            if (prodOpt.isEmpty()) {
+                return "redirect:/ventas/nuevo?error=productoNoEncontrado";
+            }
+
+            int cant = cantidad != null && i < cantidad.size() ? cantidad.get(i) : 1;
+            if (cant <= 0) {
+                return "redirect:/ventas/nuevo?error=cantidadInvalida";
+            }
+
             VentaDetalle detalle = new VentaDetalle();
-            detalle.setProducto(productoService.buscarPorId(productoId.get(i)).orElseThrow());
-            detalle.setCantidad(cantidad != null && i < cantidad.size() ? cantidad.get(i) : 1);
+            detalle.setProducto(prodOpt.get());
+            detalle.setCantidad(cant);
             detalle.setTipoVenta(tipoVenta != null && i < tipoVenta.size() ? tipoVenta.get(i) : "UNIDAD");
+
+            var prod = prodOpt.get();
+            if ("UNIDAD".equals(detalle.getTipoVenta()) && prod.getCantidadUnidad() < cant) {
+                return "redirect:/ventas/nuevo?error=stockInsuficiente&producto=" + prod.getNombreProducto();
+            }
+            if ("FRACCION".equals(detalle.getTipoVenta())) {
+                int fraccionesDisponibles = prod.getCantidadFraccion() + prod.getCantidadUnidad() * 10;
+                if (fraccionesDisponibles < cant) {
+                    return "redirect:/ventas/nuevo?error=stockInsuficiente&producto=" + prod.getNombreProducto();
+                }
+            }
+
             detalles.add(detalle);
         }
 
-        ventaService.registrarVenta(cabecera, detalles, actual, request);
+        if (detalles.isEmpty()) {
+            return "redirect:/ventas/nuevo?error=sinProductos";
+        }
+
+        try {
+            ventaService.registrarVenta(cabecera, detalles, actual, request);
+        } catch (Exception e) {
+            return "redirect:/ventas/nuevo?error=" + e.getMessage();
+        }
         return "redirect:/ventas/nuevo?exito";
+    }
+
+    private boolean requiereVerificacion2fa(Authentication auth, HttpSession session) {
+        if (auth == null || !auth.isAuthenticated()) return false;
+        Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElse(null);
+        if (actual == null) return false;
+        boolean tiene2fa = actual.getSecretKey2fa() != null && !actual.getSecretKey2fa().isEmpty();
+        if (!tiene2fa) return false;
+        Boolean verificado = (Boolean) session.getAttribute("2fa_verified");
+        return verificado == null || !verificado;
     }
 }

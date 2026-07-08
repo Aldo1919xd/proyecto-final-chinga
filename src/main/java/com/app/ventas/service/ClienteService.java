@@ -5,6 +5,7 @@ import com.app.ventas.entity.Usuario;
 import com.app.ventas.repository.ClienteRepository;
 import com.app.ventas.util.EncryptionUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,13 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final AuditoriaService auditoriaService;
+    private final EncryptionUtil encryptionUtil;
 
-    public ClienteService(ClienteRepository clienteRepository, AuditoriaService auditoriaService) {
+    public ClienteService(ClienteRepository clienteRepository, AuditoriaService auditoriaService,
+                          EncryptionUtil encryptionUtil) {
         this.clienteRepository = clienteRepository;
         this.auditoriaService = auditoriaService;
+        this.encryptionUtil = encryptionUtil;
     }
 
     public List<Cliente> listarActivos() {
@@ -40,18 +44,54 @@ public class ClienteService {
     @Transactional
     public Cliente guardar(Cliente cliente, Usuario usuarioActual, HttpServletRequest request) {
         boolean esNuevo = cliente.getCodCliente() == null;
-        cliente.setNumeroDocumento(EncryptionUtil.cifrar(cliente.getNumeroDocumento()));
-        if (cliente.getFechaNacimiento() != null && !cliente.getFechaNacimiento().isEmpty()) {
-            cliente.setFechaNacimiento(EncryptionUtil.cifrar(cliente.getFechaNacimiento()));
+
+        if (!esNuevo) {
+            Cliente existente = clienteRepository.findById(cliente.getCodCliente()).orElse(null);
+            if (existente != null) {
+                boolean docEncrypted = estaEncriptado(existente.getNumeroDocumento());
+                String docActual = docEncrypted ? encryptionUtil.descifrar(existente.getNumeroDocumento()) : existente.getNumeroDocumento();
+                if (cliente.getNumeroDocumento().equals(docActual)) {
+                    cliente.setNumeroDocumento(estaEncriptado(existente.getNumeroDocumento())
+                            ? existente.getNumeroDocumento() : encryptionUtil.cifrar(cliente.getNumeroDocumento()));
+                } else {
+                    cliente.setNumeroDocumento(encryptionUtil.cifrar(cliente.getNumeroDocumento()));
+                }
+
+                String fechaGuardada = existente.getFechaNacimiento();
+                if (fechaGuardada != null && !fechaGuardada.isEmpty()) {
+                    boolean fechaEncrypted = estaEncriptado(fechaGuardada);
+                    String fechaDescifrada = fechaEncrypted ? encryptionUtil.descifrar(fechaGuardada) : fechaGuardada;
+                    if (cliente.getFechaNacimiento() != null && !cliente.getFechaNacimiento().isEmpty()) {
+                        if (cliente.getFechaNacimiento().equals(fechaDescifrada)) {
+                            cliente.setFechaNacimiento(fechaEncrypted ? fechaGuardada : encryptionUtil.cifrar(cliente.getFechaNacimiento()));
+                        } else {
+                            cliente.setFechaNacimiento(encryptionUtil.cifrar(cliente.getFechaNacimiento()));
+                        }
+                    }
+                } else if (cliente.getFechaNacimiento() != null && !cliente.getFechaNacimiento().isEmpty()) {
+                    cliente.setFechaNacimiento(encryptionUtil.cifrar(cliente.getFechaNacimiento()));
+                }
+            } else {
+                cifrarCampos(cliente);
+            }
+        } else {
+            cifrarCampos(cliente);
         }
-        Cliente guardado = clienteRepository.save(cliente);
+
+        Cliente guardado;
+        try {
+            guardado = clienteRepository.save(cliente);
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("Ya existe un cliente con ese tipo y numero de documento", e);
+        }
+
         auditoriaService.registrar(usuarioActual, "Maestras", "Cliente",
                 esNuevo ? "INSERT" : "UPDATE",
                 guardado.getCodCliente(),
                 esNuevo ? null : "{\"nombre\":\"" + cliente.getNombreCliente() + "\"}",
                 "{\"nombre\":\"" + guardado.getNombreCliente() + "\"}",
                 request);
-        return descifrarCliente(guardado);
+        return guardado;
     }
 
     @Transactional
@@ -65,13 +105,29 @@ public class ClienteService {
 
     private Cliente descifrarCliente(Cliente c) {
         try {
-            c.setNumeroDocumento(EncryptionUtil.descifrar(c.getNumeroDocumento()));
+            c.setNumeroDocumento(encryptionUtil.descifrar(c.getNumeroDocumento()));
+        } catch (Exception ignored) {}
+        try {
             if (c.getFechaNacimiento() != null && !c.getFechaNacimiento().isEmpty()) {
-                c.setFechaNacimiento(EncryptionUtil.descifrar(c.getFechaNacimiento()));
+                c.setFechaNacimiento(encryptionUtil.descifrar(c.getFechaNacimiento()));
             }
-        } catch (Exception e) {
-            // ya está descifrado o es texto plano
-        }
+        } catch (Exception ignored) {}
         return c;
+    }
+
+    private boolean estaEncriptado(String texto) {
+        try {
+            encryptionUtil.descifrar(texto);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void cifrarCampos(Cliente cliente) {
+        cliente.setNumeroDocumento(encryptionUtil.cifrar(cliente.getNumeroDocumento()));
+        if (cliente.getFechaNacimiento() != null && !cliente.getFechaNacimiento().isEmpty()) {
+            cliente.setFechaNacimiento(encryptionUtil.cifrar(cliente.getFechaNacimiento()));
+        }
     }
 }

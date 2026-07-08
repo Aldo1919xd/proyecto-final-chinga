@@ -29,7 +29,7 @@
           <td th:text="${i.cantidadUnidad}">0</td>
           <td th:text="${i.cantidadFraccion}">0</td>
           <td th:text="${i.observacion}">-</td>
-          <td th:text="${i.fechaHora}">2024-01-01</td>
+          <td th:text="${#temporals.format(i.fechaHora, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 00:00:00</td>
           <td th:text="${i.usuarioRegistro.usuario}">admin</td>
         </tr>
       </tbody>

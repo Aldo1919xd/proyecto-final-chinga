@@ -15,10 +15,11 @@ public class Usuario {
     private Integer idUsuario;
 
     @NotBlank(message = "El nombre de usuario es obligatorio")
-    @Size(max = 30, message = "Maximo 30 caracteres")
+    @Size(min = 3, max = 30, message = "El usuario debe tener entre 3 y 30 caracteres")
     @Column(nullable = false, unique = true, length = 30)
     private String usuario;
 
+    @Size(min = 6, message = "La contrasena debe tener al menos 6 caracteres")
     @Column(nullable = false, length = 255)
     private String password;
 
@@ -30,8 +31,9 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    @Column(updatable = false)
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    @Column(insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fechaRegistro;
 
     @ManyToOne
     @JoinColumn(name = "usuarioCreacion")

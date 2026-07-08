@@ -8,17 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class VentaService {
 
     private static final BigDecimal IGV_TASA = new BigDecimal("0.18");
-
-    public List<VentaCabecera> listarTodas() {
-        return ventaCabeceraRepository.findByEstadoTrueOrderByFechaHoraDesc();
-    }
 
     private final VentaCabeceraRepository ventaCabeceraRepository;
     private final VentaDetalleRepository ventaDetalleRepository;
@@ -44,21 +39,20 @@ public class VentaService {
         this.clienteRepository = clienteRepository;
     }
 
+    public List<VentaCabecera> listarTodas() {
+        return ventaCabeceraRepository.findByEstadoTrueOrderByFechaHoraDesc();
+    }
+
     @Transactional
-    public VentaCabecera registrarVenta(VentaCabecera cabecera, java.util.List<VentaDetalle> detalles,
+    public VentaCabecera registrarVenta(VentaCabecera cabecera, List<VentaDetalle> detalles,
                                         Usuario usuarioActual, HttpServletRequest request) {
         if (detalles == null || detalles.isEmpty()) {
             throw new IllegalArgumentException("Debe agregar al menos un producto a la venta");
         }
+
         Cliente cliente = clienteRepository.findById(cabecera.getCliente().getCodCliente()).orElseThrow();
         String tipoDoc = cliente.getTipoDocumento().getDescripcion();
-        String tipoComprobante;
-
-        if ("RUC".equalsIgnoreCase(tipoDoc)) {
-            tipoComprobante = "FACTURA";
-        } else {
-            tipoComprobante = "BOLETA";
-        }
+        String tipoComprobante = "RUC".equalsIgnoreCase(tipoDoc) ? "FACTURA" : "BOLETA";
         cabecera.setTipoComprobante(tipoComprobante);
 
         String serie = tipoComprobante.equals("FACTURA") ? "F001" : "B001";
@@ -77,7 +71,6 @@ public class VentaService {
 
         cabecera.setSerie(serie);
         cabecera.setNumeroCorrelativo(correlativo.getNumeroActual());
-        cabecera.setFechaHora(LocalDateTime.now());
         cabecera.setUsuarioRegistro(usuarioActual);
 
         BigDecimal subtotalTotal = BigDecimal.ZERO;
@@ -97,16 +90,16 @@ public class VentaService {
             subtotalTotal = subtotalTotal.add(detalle.getSubtotal());
 
             if (detalle.getTipoVenta().equals("FRACCION")) {
-                if (producto.getCantidadFraccion() < detalle.getCantidad()) {
-                    if (producto.getCantidadUnidad() > 0) {
-                        producto.setCantidadUnidad(producto.getCantidadUnidad() - 1);
-                        producto.setCantidadFraccion(producto.getCantidadFraccion() + 10);
-                    }
-                }
-                if (producto.getCantidadFraccion() < detalle.getCantidad()) {
+                int needed = detalle.getCantidad();
+                int available = producto.getCantidadFraccion() + producto.getCantidadUnidad() * 10;
+                if (available < needed) {
                     throw new RuntimeException("Stock insuficiente para " + producto.getNombreProducto());
                 }
-                producto.setCantidadFraccion(producto.getCantidadFraccion() - detalle.getCantidad());
+                while (producto.getCantidadFraccion() < needed && producto.getCantidadUnidad() > 0) {
+                    producto.setCantidadUnidad(producto.getCantidadUnidad() - 1);
+                    producto.setCantidadFraccion(producto.getCantidadFraccion() + 10);
+                }
+                producto.setCantidadFraccion(producto.getCantidadFraccion() - needed);
             } else {
                 if (producto.getCantidadUnidad() < detalle.getCantidad()) {
                     throw new RuntimeException("Stock insuficiente para " + producto.getNombreProducto());
@@ -119,17 +112,12 @@ public class VentaService {
             Kardex kardex = new Kardex();
             kardex.setProducto(producto);
             kardex.setTipoOperacion(new TipoOperacion(2));
-            if (detalle.getTipoVenta().equals("UNIDAD")) {
-                kardex.setCantidadInicial(stockUndAntes);
-                kardex.setCantidadFinal(producto.getCantidadUnidad());
-            } else {
-                kardex.setCantidadInicial(stockFraccAntes);
-                kardex.setCantidadFinal(producto.getCantidadFraccion());
-            }
+            kardex.setCantidadInicial(detalle.getTipoVenta().equals("UNIDAD") ? stockUndAntes : stockFraccAntes);
             kardex.setCantidadMovimiento(detalle.getCantidad());
+            kardex.setCantidadFinal(detalle.getTipoVenta().equals("UNIDAD")
+                    ? producto.getCantidadUnidad() : producto.getCantidadFraccion());
             kardex.setSaldoUnitario(producto.getCantidadUnidad());
             kardex.setSaldoFraccionario(producto.getCantidadFraccion());
-            kardex.setFechaHora(LocalDateTime.now());
             kardex.setCodDocumento(tipoComprobante + "-" + serie + "-" + correlativo.getNumeroActual());
             kardex.setUsuarioRegistro(usuarioActual);
             kardexRepository.save(kardex);

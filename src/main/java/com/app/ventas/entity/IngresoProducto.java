@@ -1,6 +1,9 @@
 package com.app.ventas.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,16 +14,20 @@ public class IngresoProducto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer codIngreso;
 
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaHora;
 
+    @NotNull(message = "Debe seleccionar un producto")
     @ManyToOne
     @JoinColumn(name = "codProducto", nullable = false)
     private Producto producto;
 
+    @Min(value = 0, message = "La cantidad no puede ser negativa")
     @Column(nullable = false)
     private Integer cantidadUnidad = 0;
 
+    @Min(value = 0, message = "La cantidad no puede ser negativa")
     @Column(nullable = false)
     private Integer cantidadFraccion = 0;
 
@@ -30,8 +37,9 @@ public class IngresoProducto {
     @Column(nullable = false)
     private Boolean estado = true;
 
-    @Column(updatable = false)
-    private LocalDateTime fechaRegistro = LocalDateTime.now();
+    @Column(insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fechaRegistro;
 
     @ManyToOne
     @JoinColumn(name = "usuarioRegistro")
@@ -42,6 +50,12 @@ public class IngresoProducto {
     private Integer version = 0;
 
     public IngresoProducto() {}
+
+    @AssertTrue(message = "Debe ingresar al menos una unidad o fraccion")
+    public boolean isCantidadValida() {
+        return (cantidadUnidad != null && cantidadUnidad > 0)
+            || (cantidadFraccion != null && cantidadFraccion > 0);
+    }
 
     public Integer getCodIngreso() { return codIngreso; }
     public void setCodIngreso(Integer codIngreso) { this.codIngreso = codIngreso; }

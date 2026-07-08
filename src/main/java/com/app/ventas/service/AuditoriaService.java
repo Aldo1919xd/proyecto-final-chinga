@@ -6,8 +6,6 @@ import com.app.ventas.repository.AuditoriaRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 public class AuditoriaService {
 
@@ -28,7 +26,6 @@ public class AuditoriaService {
         a.setCodigoRegistro(codigoRegistro);
         a.setValorAnterior(valorAnterior);
         a.setValorNuevo(valorNuevo);
-        a.setFechaHora(LocalDateTime.now());
         if (request != null) {
             a.setIpOrigen(request.getRemoteAddr());
             a.setEquipo(request.getRemoteHost());

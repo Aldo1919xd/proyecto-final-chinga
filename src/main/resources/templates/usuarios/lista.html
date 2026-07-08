@@ -7,7 +7,10 @@
 <div class="container content">
   <div class="page-header">
     <h2>Usuarios</h2>
-    <a href="/usuarios/nuevo" class="btn btn-primary">Nuevo Usuario</a>
+    <div class="d-flex gap-2">
+      <a href="/usuarios/2fa/estado" class="btn btn-outline-info">Mi 2FA</a>
+      <a href="/usuarios/nuevo" class="btn btn-primary">Nuevo Usuario</a>
+    </div>
   </div>
   <div class="table-wrapper">
     <table class="table table-bordered table-hover">
@@ -16,6 +19,7 @@
           <th>ID</th>
           <th>Usuario</th>
           <th>Rol</th>
+          <th>2FA</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -25,6 +29,10 @@
           <td th:text="${u.idUsuario}">1</td>
           <td th:text="${u.usuario}">usuario</td>
           <td th:text="${u.rol.nombreRol}">Rol</td>
+          <td>
+            <span th:if="${u.secretKey2fa != null and !u.secretKey2fa.isEmpty()}" class="badge bg-success">Activo</span>
+            <span th:unless="${u.secretKey2fa != null and !u.secretKey2fa.isEmpty()}" class="badge bg-secondary">Inactivo</span>
+          </td>
           <td>
             <span th:if="${u.estado}" class="badge bg-success">Activo</span>
             <span th:unless="${u.estado}" class="badge bg-danger">Inactivo</span>

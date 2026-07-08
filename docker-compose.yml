@@ -2,6 +2,7 @@ services:
   db:
     image: mariadb:10.6
     container_name: ventas-db
+    command: --default-time-zone='-05:00'
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: ventas_db
@@ -21,6 +22,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      TZ: America/Lima
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ventas_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root

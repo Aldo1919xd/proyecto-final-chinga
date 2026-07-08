@@ -192,14 +192,77 @@ CREATE TABLE Auditoria (
     FOREIGN KEY (codUsuario) REFERENCES Usuario(idUsuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ============================================================
+-- DATA INICIAL
+-- ============================================================
+
+-- Tipos de operacion para Kardex
 INSERT INTO TipoOperacion (codTipoOperacion, descripcion) VALUES
 (1, 'Ingreso'),
 (2, 'Venta'),
 (3, 'Extorno'),
 (4, 'Ajuste');
 
+-- Roles del sistema
 INSERT INTO Rol (idRol, nombreRol, estado) VALUES
 (1, 'Superusuario', TRUE),
 (2, 'Vendedor', TRUE),
 (3, 'Almacen', TRUE),
 (4, 'Contabilidad', TRUE);
+
+-- Tipos de documento para clientes
+INSERT INTO TipoDocumento (codTipoDocumento, descripcion, estado) VALUES
+(1, 'DNI', TRUE),
+(2, 'RUC', TRUE),
+(3, 'CE', TRUE),
+(4, 'Pasaporte', TRUE);
+
+-- Funcionalidades del sistema (modulos)
+INSERT INTO Funcionalidad (idFuncionalidad, nombre) VALUES
+(1, 'Dashboard'),
+(2, 'Usuarios'),
+(3, 'Roles'),
+(4, 'Clientes'),
+(5, 'Categorias'),
+(6, 'Productos'),
+(7, 'Ingresos'),
+(8, 'Ventas'),
+(9, 'Kardex'),
+(10, 'Auditoria');
+
+-- Permisos por rol (ver, crear, editar, eliminar, imprimir)
+-- Superusuario (idRol=1): acceso total a todo
+INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
+(1, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
+(1, 2,  TRUE, TRUE,  TRUE,  TRUE,  FALSE),
+(1, 3,  TRUE, TRUE,  TRUE,  TRUE,  FALSE),
+(1, 4,  TRUE, TRUE,  TRUE,  TRUE,  TRUE),
+(1, 5,  TRUE, TRUE,  TRUE,  TRUE,  FALSE),
+(1, 6,  TRUE, TRUE,  TRUE,  TRUE,  TRUE),
+(1, 7,  TRUE, TRUE,  TRUE,  TRUE,  FALSE),
+(1, 8,  TRUE, TRUE,  TRUE,  TRUE,  TRUE),
+(1, 9,  TRUE, FALSE, FALSE, FALSE, TRUE),
+(1, 10, TRUE, FALSE, FALSE, FALSE, FALSE);
+
+-- Vendedor (idRol=2): clientes, ventas
+INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
+(2, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
+(2, 4,  TRUE, TRUE,  TRUE,  FALSE, FALSE),
+(2, 6,  TRUE, FALSE, FALSE, FALSE, TRUE),
+(2, 8,  TRUE, TRUE,  FALSE, FALSE, TRUE),
+(2, 9,  TRUE, FALSE, FALSE, FALSE, FALSE);
+
+-- Almacen (idRol=3): productos, ingresos, kardex
+INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
+(3, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
+(3, 5,  TRUE, TRUE,  TRUE,  FALSE, FALSE),
+(3, 6,  TRUE, TRUE,  TRUE,  FALSE, TRUE),
+(3, 7,  TRUE, TRUE,  TRUE,  FALSE, FALSE),
+(3, 9,  TRUE, FALSE, FALSE, FALSE, TRUE);
+
+-- Contabilidad (idRol=4): solo lectura + imprimir reportes
+INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
+(4, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
+(4, 8,  TRUE, FALSE, FALSE, FALSE, TRUE),
+(4, 9,  TRUE, FALSE, FALSE, FALSE, TRUE),
+(4, 10, TRUE, FALSE, FALSE, FALSE, FALSE);

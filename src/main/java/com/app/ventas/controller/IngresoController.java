@@ -6,9 +6,11 @@ import com.app.ventas.service.IngresoService;
 import com.app.ventas.service.ProductoService;
 import com.app.ventas.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -19,17 +21,17 @@ public class IngresoController {
     private final ProductoService productoService;
     private final UsuarioService usuarioService;
 
-    @GetMapping
-    public String listar(Model model) {
-        model.addAttribute("ingresos", ingresoService.listarTodos());
-        return "ingresos/lista";
-    }
-
     public IngresoController(IngresoService ingresoService, ProductoService productoService,
                              UsuarioService usuarioService) {
         this.ingresoService = ingresoService;
         this.productoService = productoService;
         this.usuarioService = usuarioService;
+    }
+
+    @GetMapping
+    public String listar(Model model) {
+        model.addAttribute("ingresos", ingresoService.listarTodos());
+        return "ingresos/lista";
     }
 
     @GetMapping("/nuevo")
@@ -40,7 +42,12 @@ public class IngresoController {
     }
 
     @PostMapping("/guardar")
-    public String guardar(IngresoProducto ingreso, Authentication auth, HttpServletRequest request) {
+    public String guardar(@Valid IngresoProducto ingreso, BindingResult result, Model model,
+                          Authentication auth, HttpServletRequest request) {
+        if (result.hasErrors()) {
+            model.addAttribute("productos", productoService.listarActivos());
+            return "ingresos/formulario";
+        }
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
         ingresoService.registrarIngreso(ingreso, actual, request);
         return "redirect:/ingresos/nuevo?exito";

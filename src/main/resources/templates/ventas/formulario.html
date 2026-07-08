@@ -7,34 +7,43 @@
 <div class="container content">
   <h2>Registrar Venta</h2>
   <div th:if="${param.exito}" class="alert alert-success">Venta registrada correctamente</div>
+  <div th:if="${param.error != null and param.error[0] == 'sinCliente'}" class="alert alert-danger">Debe seleccionar un cliente</div>
   <div th:if="${param.error != null and param.error[0] == 'sinProductos'}" class="alert alert-danger">Debe agregar al menos un producto a la venta</div>
+  <div th:if="${param.error != null and param.error[0] == 'productoNoEncontrado'}" class="alert alert-danger">Producto no encontrado</div>
+  <div th:if="${param.error != null and param.error[0] == 'cantidadInvalida'}" class="alert alert-danger">La cantidad debe ser mayor a 0</div>
+  <div th:if="${param.error != null and param.error[0] == 'stockInsuficiente'}" class="alert alert-danger">
+    Stock insuficiente para <span th:text="${param.producto}">producto</span>
+  </div>
+  <div th:if="${param.error != null and param.error[0] == 'otpRequerido'}" class="alert alert-warning">Debe ingresar el codigo OTP de 2FA</div>
+  <div th:if="${param.error != null and param.error[0] == 'otpInvalido'}" class="alert alert-danger">Codigo OTP invalido</div>
   <form th:action="@{/ventas/guardar}" method="post" class="card-form">
     <div class="row mb-3">
-      <div class="col">
+      <div class="col-md-8">
         <label class="form-label">Cliente</label>
         <div class="input-group">
           <input type="text" id="clienteNombre" class="form-control" readonly placeholder="Seleccione un cliente..." required>
           <input type="hidden" name="cliente.codCliente" id="clienteId">
           <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCliente">Buscar</button>
         </div>
+        <div class="invalid-feedback"></div>
       </div>
-      <div class="col">
-        <label class="form-label">Tipo Documento</label>
-        <select name="tipoDocumento.codTipoDocumento" class="form-select" required>
-          <option value="1">DNI</option>
-          <option value="2">RUC</option>
-        </select>
+      <div class="col-md-4">
+        <label class="form-label">Tipo Comprobante</label>
+        <input type="text" id="tipoComprobanteDisplay" class="form-control" readonly value="—">
+        <input type="hidden" name="tipoDocumento.codTipoDocumento" id="tipoDocumentoId" value="1">
       </div>
     </div>
+
     <h5 class="section-title">Detalle de Productos</h5>
     <div class="table-wrapper mb-3">
       <table class="table table-bordered" id="tablaDetalle">
         <thead>
           <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Tipo</th>
-            <th>Accion</th>
+            <th style="width:40%">Producto</th>
+            <th style="width:15%">Cantidad</th>
+            <th style="width:15%">Tipo</th>
+            <th style="width:15%">Stock Disp.</th>
+            <th style="width:15%">Accion</th>
           </tr>
         </thead>
         <tbody>
@@ -42,13 +51,20 @@
             <td>
               <input type="text" class="form-control producto-nombre" readonly placeholder="Seleccione producto...">
               <input type="hidden" name="productoId" class="producto-id">
+              <div class="invalid-feedback"></div>
             </td>
-            <td><input type="number" name="cantidad" class="form-control" value="1" min="1"></td>
             <td>
-              <select name="tipoVenta" class="form-select">
+              <input type="number" name="cantidad" class="form-control cantidad-input" value="1" min="1" data-val="positivo">
+              <div class="invalid-feedback"></div>
+            </td>
+            <td>
+              <select name="tipoVenta" class="form-select tipo-venta-select">
                 <option value="UNIDAD">Unidad</option>
                 <option value="FRACCION">Fraccion</option>
               </select>
+            </td>
+            <td>
+              <span class="stock-display text-muted small">—</span>
             </td>
             <td>
               <button type="button" class="btn btn-sm btn-outline-primary btn-buscar-producto" data-bs-toggle="modal" data-bs-target="#modalProducto">Buscar</button>
@@ -59,8 +75,9 @@
       </table>
     </div>
     <div class="d-flex gap-2 mb-3">
-      <button type="button" class="btn btn-outline-primary btn-sm" onclick="agregarFila()">Agregar Producto</button>
+      <button type="button" class="btn btn-outline-primary btn-sm" onclick="agregarFila()">+ Agregar Producto</button>
     </div>
+
     <button type="submit" class="btn btn-primary">Registrar Venta</button>
   </form>
 </div>
@@ -85,6 +102,7 @@
                 <th>Codigo</th>
                 <th>Nombre</th>
                 <th>Documento</th>
+                <th>Tipo</th>
                 <th></th>
               </tr>
             </thead>
@@ -117,6 +135,7 @@
                 <th>Nombre</th>
                 <th>P. Unitario</th>
                 <th>Stock Und</th>
+                <th>Stock Fracc</th>
                 <th></th>
               </tr>
             </thead>
@@ -139,7 +158,70 @@ function agregarFila() {
   for (var i = 0; i < inputs.length; i++) { inputs[i].value = ''; }
   var selects = newRow.getElementsByTagName('select');
   for (var i = 0; i < selects.length; i++) { selects[i].selectedIndex = 0; }
+  var stockSpans = newRow.querySelectorAll('.stock-display');
+  for (var i = 0; i < stockSpans.length; i++) { stockSpans[i].textContent = '—'; }
   table.appendChild(newRow);
+  inicializarFila(newRow);
+}
+
+function inicializarFila(row) {
+  var select = row.querySelector('.tipo-venta-select');
+  var stockSpan = row.querySelector('.stock-display');
+  var cantidadInput = row.querySelector('.cantidad-input');
+  if (select && stockSpan) {
+    select.addEventListener('change', function () {
+      actualizarStockDisplay(row);
+    });
+  }
+  if (cantidadInput && stockSpan) {
+    cantidadInput.addEventListener('input', function () {
+      validarCantidadStock(row);
+    });
+  }
+}
+
+function actualizarStockDisplay(row) {
+  var prodId = row.querySelector('.producto-id');
+  var select = row.querySelector('.tipo-venta-select');
+  var stockSpan = row.querySelector('.stock-display');
+  if (!prodId || !prodId.value || !select || !stockSpan) return;
+  var tipo = select.value;
+  fetch('/productos/buscar?q=')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var prod = data.find(function (p) { return p.codProducto == prodId.value; });
+      if (prod) {
+        if (tipo === 'UNIDAD') {
+          stockSpan.textContent = prod.cantidadUnidad + ' und';
+        } else {
+          var totalFracc = prod.cantidadFraccion + (prod.cantidadUnidad > 0 ? (prod.cantidadUnidad - 1) * 10 : 0);
+          stockSpan.textContent = totalFracc + ' fracc';
+        }
+      }
+    });
+}
+
+function validarCantidadStock(row) {
+  var prodId = row.querySelector('.producto-id');
+  var select = row.querySelector('.tipo-venta-select');
+  var cantidadInput = row.querySelector('.cantidad-input');
+  var stockSpan = row.querySelector('.stock-display');
+  if (!prodId || !prodId.value || !select || !cantidadInput || !stockSpan) return;
+
+  var tipo = select.value;
+  var cant = parseInt(cantidadInput.value, 10);
+  var stockText = stockSpan.textContent;
+  var stockVal = parseInt(stockText, 10);
+
+  if (cant && stockVal && !isNaN(stockVal) && cant > stockVal) {
+    cantidadInput.classList.add('is-invalid');
+    var fb = cantidadInput.closest('td').querySelector('.invalid-feedback');
+    if (fb) fb.textContent = 'Stock insuficiente (max: ' + stockVal + ')';
+  } else {
+    cantidadInput.classList.remove('is-invalid');
+    var fb = cantidadInput.closest('td').querySelector('.invalid-feedback');
+    if (fb) fb.textContent = '';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -168,6 +250,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Inicializar filas existentes
+  document.querySelectorAll('#tablaDetalle tbody tr').forEach(function (row) {
+    inicializarFila(row);
+  });
+
   // Load initial data
   buscarClientes('');
   buscarProductos('');
@@ -182,10 +269,19 @@ function buscarClientes(q) {
       data.forEach(function (c) {
         var tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
-        tr.innerHTML = '<td>' + c.codCliente + '</td><td>' + (c.nombreCliente || '') + '</td><td>' + c.numeroDocumento + '</td><td><button class="btn btn-sm btn-outline-primary">Seleccionar</button></td>';
+        tr.innerHTML = '<td>' + c.codCliente + '</td><td>' + (c.nombreCliente || '') + '</td><td>' + c.numeroDocumento + '</td><td>' + (c.tipoDocumento ? c.tipoDocumento.descripcion : '') + '</td><td><button class="btn btn-sm btn-outline-primary">Seleccionar</button></td>';
         tr.addEventListener('click', function () {
           document.getElementById('clienteId').value = c.codCliente;
-          document.getElementById('clienteNombre').value = (c.nombreCliente || '') + ' - ' + c.numeroDocumento;
+          document.getElementById('clienteNombre').value = (c.nombreCliente || c.razonSocial || '') + ' - ' + c.numeroDocumento;
+          var tipoComp = document.getElementById('tipoComprobanteDisplay');
+          var tipoDocHidden = document.getElementById('tipoDocumentoId');
+          if (c.tipoDocumento && c.tipoDocumento.descripcion === 'RUC') {
+            tipoComp.value = 'FACTURA (F001)';
+            tipoDocHidden.value = '2';
+          } else {
+            tipoComp.value = 'BOLETA (B001)';
+            tipoDocHidden.value = '1';
+          }
           bootstrap.Modal.getInstance(document.getElementById('modalCliente')).hide();
         });
         tbody.appendChild(tr);
@@ -202,13 +298,15 @@ function buscarProductos(q) {
       data.forEach(function (p) {
         var tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
-        tr.innerHTML = '<td>' + p.codProducto + '</td><td>' + p.nombreProducto + '</td><td>' + p.precioUnitario + '</td><td>' + p.cantidadUnidad + '</td><td><button class="btn btn-sm btn-outline-primary">Seleccionar</button></td>';
+        tr.innerHTML = '<td>' + p.codProducto + '</td><td>' + p.nombreProducto + '</td><td>S/ ' + p.precioUnitario + '</td><td>' + p.cantidadUnidad + '</td><td>' + p.cantidadFraccion + '</td><td><button class="btn btn-sm btn-outline-primary">Seleccionar</button></td>';
         tr.addEventListener('click', function () {
           var targetRow = filaProductoActual || document.querySelector('#tablaDetalle tbody tr:last-child');
           targetRow.querySelector('.producto-id').value = p.codProducto;
           targetRow.querySelector('.producto-nombre').value = p.nombreProducto;
           filaProductoActual = null;
-          bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
+          actualizarStockDisplay(targetRow);
+          var modal = bootstrap.Modal.getInstance(document.getElementById('modalProducto'));
+          if (modal) modal.hide();
         });
         tbody.appendChild(tr);
       });

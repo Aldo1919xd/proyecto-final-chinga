@@ -32,7 +32,8 @@ public class Auditoria {
     @Column(columnDefinition = "TEXT")
     private String valorNuevo;
 
-    @Column(nullable = false)
+    @Column(nullable = false, insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime fechaHora;
 
     @Column(length = 45)

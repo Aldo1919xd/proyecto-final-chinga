@@ -47,7 +47,6 @@ public class UsuarioService {
         if (esNuevo) {
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
             usuario.setUsuarioCreacion(usuarioActual);
-            usuario.setFechaRegistro(LocalDateTime.now());
         } else {
             Usuario existente = usuarioRepository.findById(usuario.getIdUsuario()).orElseThrow();
             if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()
@@ -77,6 +76,12 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
         auditoriaService.registrar(usuarioActual, "Seguridad", "Usuario",
                 "UPDATE", idUsuario, null, "{\"password\":\"Cambiada\"}", request);
+    }
+
+    @Transactional
+    public void actualizar2fa(Usuario usuario) {
+        usuario.setFechaModificacion(LocalDateTime.now());
+        usuarioRepository.save(usuario);
     }
 
     @Transactional

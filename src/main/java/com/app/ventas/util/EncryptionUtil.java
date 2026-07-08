@@ -1,6 +1,5 @@
 package com.app.ventas.util;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,39 +14,41 @@ public class EncryptionUtil {
 
     private static final String ALGORITHM = "DES";
 
-    @Value("${app.encryption.secret:VentasApp}")
-    private String secretKey;
+    private final SecretKey clave;
 
-    private static String staticSecretKey;
-
-    @PostConstruct
-    public void init() {
-        staticSecretKey = secretKey;
+    public EncryptionUtil(@Value("${app.encryption.secret:VentasApp}") String secret) {
+        try {
+            byte[] keyBytes = secret.getBytes("UTF-8");
+            if (keyBytes.length < 8) {
+                byte[] padded = new byte[8];
+                System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
+                keyBytes = padded;
+            }
+            DESKeySpec desKeySpec = new DESKeySpec(keyBytes);
+            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(ALGORITHM);
+            this.clave = keyFactory.generateSecret(desKeySpec);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al inicializar clave DES", e);
+        }
     }
 
-    private static SecretKey generarClave() throws Exception {
-        DESKeySpec desKeySpec = new DESKeySpec(staticSecretKey.getBytes());
-        SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(ALGORITHM);
-        return keyFactory.generateSecret(desKeySpec);
-    }
-
-    public static String cifrar(String texto) {
+    public String cifrar(String texto) {
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, generarClave());
-            byte[] bytes = cipher.doFinal(texto.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, clave);
+            byte[] bytes = cipher.doFinal(texto.getBytes("UTF-8"));
             return Base64.getEncoder().encodeToString(bytes);
         } catch (Exception e) {
             throw new RuntimeException("Error al cifrar con DES", e);
         }
     }
 
-    public static String descifrar(String textoCifrado) {
+    public String descifrar(String textoCifrado) {
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, generarClave());
+            cipher.init(Cipher.DECRYPT_MODE, clave);
             byte[] bytes = cipher.doFinal(Base64.getDecoder().decode(textoCifrado));
-            return new String(bytes);
+            return new String(bytes, "UTF-8");
         } catch (Exception e) {
             throw new RuntimeException("Error al descifrar con DES", e);
         }

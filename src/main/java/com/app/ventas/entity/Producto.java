@@ -26,11 +26,11 @@ public class Producto {
     @JoinColumn(name = "codCategoria", nullable = false)
     private Categoria categoria;
 
-    @DecimalMin(value = "0.00", message = "El precio no puede ser negativo")
+    @DecimalMin(value = "0.01", message = "El precio unitario debe ser mayor a 0")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precioUnitario = BigDecimal.ZERO;
 
-    @DecimalMin(value = "0.00", message = "El precio no puede ser negativo")
+    @DecimalMin(value = "0.01", message = "El precio fraccion debe ser mayor a 0")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precioFraccion = BigDecimal.ZERO;
 
