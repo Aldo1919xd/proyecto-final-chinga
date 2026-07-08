@@ -1,8 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ========================================
-  // Utilidades
-  // ========================================
 
   function mostrarError(input, mensaje) {
     var container = input.closest('.mb-3, .col');
@@ -33,9 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
     return true;
   }
 
-  // ========================================
-  // Validacion en tiempo real (blur + input)
-  // ========================================
 
   document.querySelectorAll('.form-control, .form-select').forEach(function (el) {
     el.addEventListener('blur', function () {
@@ -56,11 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ========================================
-  // Validadores especificos (data-val)
-  // ========================================
 
-  // DNI: exactamente 8 digitos
   window.val_dni = function (input) {
     if (!input.value) return;
     if (!/^\d{8}$/.test(input.value)) {
@@ -70,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // RUC: exactamente 11 digitos
   window.val_ruc = function (input) {
     if (!input.value) return;
     if (!/^\d{11}$/.test(input.value)) {
@@ -80,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // CE: maximo 12 alfanumerico
   window.val_ce = function (input) {
     if (!input.value) return;
     if (!/^[a-zA-Z0-9]{1,12}$/.test(input.value)) {
@@ -90,7 +78,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Numero documento generico por tipo
   window.val_numeroDocumento = function (input) {
     var row = input.closest('tr, .mb-3, .col');
     var tipoSelect = row ? row.querySelector('[name$="tipoDocumento.codTipoDocumento"], .tipo-doc-select') : null;
@@ -113,7 +100,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Precio > 0
   window.val_precio = function (input) {
     if (!input.value) return;
     var num = parseFloat(input.value);
@@ -124,7 +110,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Entero positivo
   window.val_positivo = function (input) {
     if (!input.value) return;
     var num = parseInt(input.value, 10);
@@ -135,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Fecha no futura
   window.val_fechaPasada = function (input) {
     if (!input.value) return;
     var fecha = new Date(input.value);
@@ -146,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Username: minimo 3, alfanumerico
   window.val_username = function (input) {
     if (!input.value) return;
     if (input.value.length < 3) {
@@ -158,7 +141,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Password minimo 6
   window.val_password = function (input) {
     if (!input.value) return;
     if (input.value.length < 6) {
@@ -168,9 +150,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // ========================================
-  // Validacion de formulario al submit
-  // ========================================
 
   document.querySelectorAll('form').forEach(function (form) {
     form.addEventListener('submit', function (e) {
@@ -197,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
 
-      // Validacion especifica: al menos un nombre o razon social
       var nombreCliente = this.querySelector('[name="nombreCliente"]');
       var razonSocial = this.querySelector('[name="razonSocial"]');
       if (nombreCliente && razonSocial) {
@@ -209,7 +187,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
 
-      // Validacion especifica: al menos una cantidad mayor a 0 en ingreso
       var cantUnd = this.querySelector('[name="cantidadUnidad"]');
       var cantFracc = this.querySelector('[name="cantidadFraccion"]');
       if (cantUnd && cantFracc) {
@@ -228,9 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ========================================
-  // Reactividad: cambiar validador segun tipo doc
-  // ========================================
 
   var tipoDocSelect = document.querySelector('[name="tipoDocumento.codTipoDocumento"]');
   var numDocInput = document.querySelector('[name="numeroDocumento"]');
@@ -245,9 +219,6 @@ document.addEventListener('DOMContentLoaded', function () {
     actualizarValidadorDoc();
   }
 
-  // ========================================
-  // Filtros de entrada
-  // ========================================
 
   document.querySelectorAll('.solo-numeros').forEach(function (el) {
     el.addEventListener('input', function () {

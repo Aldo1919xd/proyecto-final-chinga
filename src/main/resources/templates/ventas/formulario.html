@@ -82,7 +82,6 @@
   </form>
 </div>
 
-<!-- Modal Cliente -->
 <div class="modal fade" id="modalCliente" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -114,7 +113,6 @@
   </div>
 </div>
 
-<!-- Modal Producto -->
 <div class="modal fade" id="modalProducto" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -226,7 +224,6 @@ function validarCantidadStock(row) {
 
 document.addEventListener('DOMContentLoaded', function () {
 
-  // Cliente search
   document.getElementById('btnBuscarCliente').addEventListener('click', function () {
     buscarClientes(document.getElementById('buscarClienteInput').value);
   });
@@ -234,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnBuscarCliente').click(); }
   });
 
-  // Producto search
   document.getElementById('btnBuscarProducto').addEventListener('click', function () {
     buscarProductos(document.getElementById('buscarProductoInput').value);
   });
@@ -242,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnBuscarProducto').click(); }
   });
 
-  // Modal producto: track which row triggered it
   document.getElementById('modalProducto').addEventListener('show.bs.modal', function (e) {
     var btn = e.relatedTarget;
     if (btn && btn.classList.contains('btn-buscar-producto')) {
@@ -250,12 +245,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Inicializar filas existentes
   document.querySelectorAll('#tablaDetalle tbody tr').forEach(function (row) {
     inicializarFila(row);
   });
 
-  // Load initial data
   buscarClientes('');
   buscarProductos('');
 });

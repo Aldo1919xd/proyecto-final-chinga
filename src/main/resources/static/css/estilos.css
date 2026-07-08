@@ -1,6 +1,3 @@
-/* ==============================
-   Rosé Pine Dawn -- Design System
-   ============================== */
 
 :root {
   --rp-base: #faf4ed;
@@ -43,26 +40,6 @@
   --bs-border-radius-sm: 0.375rem;
 }
 
-/* -- Base -- */
-
-body {
-  background-color: var(--rp-base);
-  color: var(--rp-text);
-  font-feature-settings: 'calt' 1, 'ss01' 1;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.text-muted {
-  color: var(--rp-subtle) !important;
-}
-
-/* -- Cards -- */
 
 .card {
   background-color: var(--rp-surface);
@@ -71,73 +48,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* -- Navbar -- */
-
-.navbar {
-  background-color: var(--rp-surface);
-  border-bottom: 1px solid var(--rp-highlight-med);
-  padding: 0.75rem 0;
-}
-
-.navbar .navbar-brand {
-  color: var(--rp-pine);
-  font-weight: 700;
-  font-size: 1.125rem;
-  letter-spacing: -0.02em;
-}
-
-.navbar .navbar-brand:hover {
-  color: var(--rp-pine);
-}
-
-.navbar .nav-link {
-  color: var(--rp-subtle);
-  font-weight: 500;
-  font-size: 0.875rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  transition: color 0.15s ease, background-color 0.15s ease;
-}
-
-.navbar .nav-link:hover,
-.navbar .nav-link:focus {
-  color: var(--rp-text);
-  background-color: var(--rp-highlight-low);
-}
-
-.navbar .nav-link.active {
-  color: var(--rp-pine);
-  background-color: transparent;
-}
-
-.navbar .dropdown-menu {
-  background-color: var(--rp-surface);
-  border: 1px solid var(--rp-highlight-med);
-  border-radius: 0.75rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  padding: 0.375rem;
-}
-
-.navbar .dropdown-item {
-  color: var(--rp-text);
-  font-size: 0.875rem;
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  transition: background-color 0.15s ease;
-}
-
-.navbar .dropdown-item:hover,
-.navbar .dropdown-item:focus {
-  background-color: var(--rp-highlight-low);
-  color: var(--rp-text);
-}
-
-.navbar .dropdown-toggle::after {
-  vertical-align: 0.125em;
-  opacity: 0.5;
-}
-
-/* -- Buttons -- */
 
 .btn {
   font-weight: 500;
@@ -220,65 +130,6 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0.375rem;
 }
 
-/* -- Tables -- */
-
-.table {
-  background-color: var(--rp-surface);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  font-size: 0.875rem;
-  margin-bottom: 0;
-}
-
-.table > :not(caption) > * > * {
-  padding: 0.75rem 1rem;
-  border-bottom-color: var(--rp-highlight-med);
-}
-
-.table thead {
-  background-color: var(--rp-base);
-}
-
-.table thead th {
-  color: var(--rp-subtle);
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-bottom: none;
-  white-space: nowrap;
-}
-
-.table tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-.table tbody tr:hover {
-  background-color: var(--rp-highlight-low);
-}
-
-.table tbody td {
-  vertical-align: middle;
-  color: var(--rp-text);
-}
-
-.table-bordered {
-  border: 1px solid var(--rp-highlight-med);
-}
-
-.table-bordered > :not(caption) > * {
-  border-width: 0;
-}
-
-.table-bordered > :not(caption) > * > * {
-  border-width: 0 0 1px 0;
-}
-
-.table > :not(caption) > * > *:last-child {
-  white-space: nowrap;
-}
-
-/* -- Badges -- */
 
 .badge {
   font-weight: 500;
@@ -295,88 +146,6 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--rp-love) !important;
 }
 
-/* -- Forms -- */
-
-.form-label {
-  color: var(--rp-subtle);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  margin-bottom: 0.375rem;
-}
-
-.form-control,
-.form-select {
-  background-color: var(--rp-surface);
-  border: 1px solid var(--rp-highlight-high);
-  border-radius: 0.5rem;
-  color: var(--rp-text);
-  font-size: 0.875rem;
-  padding: 0.5rem 0.75rem;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: var(--rp-pine);
-  box-shadow: 0 0 0 3px rgba(40, 105, 131, 0.12);
-  background-color: var(--rp-surface);
-  color: var(--rp-text);
-}
-
-.form-control::placeholder {
-  color: var(--rp-muted);
-}
-
-.form-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23797593' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-}
-
-.form-control.is-invalid,
-.form-select.is-invalid {
-  border-color: var(--rp-love);
-  background-image: none;
-}
-
-.form-control.is-invalid:focus,
-.form-select.is-invalid:focus {
-  box-shadow: 0 0 0 3px rgba(180, 99, 122, 0.15);
-}
-
-.invalid-feedback {
-  color: var(--rp-love);
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  display: block;
-}
-
-.input-group > .form-control,
-.input-group > .form-select {
-  position: relative;
-  flex: 1 1 auto;
-  width: 1%;
-  min-width: 0;
-}
-
-.input-group-text {
-  background-color: var(--rp-overlay);
-  border: 1px solid var(--rp-highlight-high);
-  color: var(--rp-subtle);
-  font-size: 0.875rem;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
-}
-
-.input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-/* -- Section spacing -- */
 .section-title {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -388,32 +157,6 @@ h1, h2, h3, h4, h5, h6 {
   border-bottom: 1px solid var(--rp-highlight-med);
 }
 
-/* -- Alerts -- */
-
-.alert {
-  border: none;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.alert-success {
-  background-color: rgba(40, 105, 131, 0.08);
-  color: var(--rp-pine);
-}
-
-.alert-danger {
-  background-color: rgba(180, 99, 122, 0.08);
-  color: var(--rp-love);
-}
-
-.alert-info {
-  background-color: rgba(86, 148, 159, 0.08);
-  color: var(--rp-foam);
-}
-
-/* -- Dashboard Cards -- */
 
 .dashboard-card {
   background-color: var(--rp-surface);
@@ -463,43 +206,6 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.4;
 }
 
-/* -- Login -- */
-
-.login-wrapper {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-card {
-  background-color: var(--rp-surface);
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  width: 100%;
-}
-
-.login-card .card-header {
-  background-color: transparent;
-  border-bottom: none;
-  padding: 2rem 2rem 0;
-  text-align: center;
-}
-
-.login-card .card-header h4 {
-  color: var(--rp-pine);
-  font-weight: 700;
-  font-size: 1.5rem;
-  letter-spacing: -0.02em;
-  margin: 0;
-}
-
-.login-card .card-body {
-  padding: 1.5rem 2rem 2rem;
-}
-
-/* -- Page Header -- */
 
 .page-header {
   display: flex;
@@ -515,14 +221,6 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-/* -- Container Top Padding -- */
-
-.content {
-  padding-top: 2rem;
-  padding-bottom: 3rem;
-}
-
-/* -- Table Wrapper -- */
 
 .table-wrapper {
   background-color: var(--rp-surface);
@@ -544,28 +242,11 @@ h1, h2, h3, h4, h5, h6 {
   padding-right: 1.25rem;
 }
 
-/* -- Card Form -- */
-
-.card-form {
-  background-color: var(--rp-surface);
-  border-radius: 0.75rem;
-  border: 1px solid var(--rp-highlight-med);
-  padding: 1.5rem;
-}
-
-/* -- Checkbox Accent -- */
 
 input[type="checkbox"] {
   accent-color: var(--rp-pine);
 }
 
-/* -- Responsive Table Scroll -- */
-
-.table-responsive {
-  border-radius: 0.75rem;
-}
-
-/* -- Tree (permisos) -- */
 
 .tree-toggle {
   color: var(--rp-pine);
