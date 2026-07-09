@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS VentaDetalle;
 DROP TABLE IF EXISTS VentaCabecera;
 DROP TABLE IF EXISTS IngresoProducto;
 DROP TABLE IF EXISTS Correlativo;
+DROP TABLE IF EXISTS ProductoComposicion;
 DROP TABLE IF EXISTS Producto;
 DROP TABLE IF EXISTS Categoria;
 DROP TABLE IF EXISTS Cliente;
@@ -87,14 +88,28 @@ CREATE TABLE Producto (
     codProducto INT AUTO_INCREMENT PRIMARY KEY,
     nombreProducto VARCHAR(120) NOT NULL,
     codCategoria INT NOT NULL,
+
     precioUnitario DECIMAL(10,2) NOT NULL DEFAULT 0,
     precioFraccion DECIMAL(10,2) NOT NULL DEFAULT 0,
     cantidadUnidad INT NOT NULL DEFAULT 0,
     cantidadFraccion INT NOT NULL DEFAULT 0,
+    esPack BOOLEAN NOT NULL DEFAULT FALSE,
+    cantidadItem INT NOT NULL DEFAULT 1,
     estado BOOLEAN NOT NULL DEFAULT TRUE,
     version INT NOT NULL DEFAULT 0,
     FOREIGN KEY (codCategoria) REFERENCES Categoria(codCategoria)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE ProductoComposicion (
+    codProductoPack INT NOT NULL,
+    codProductoComponente INT NOT NULL,
+    cantidad INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (codProductoPack, codProductoComponente),
+    FOREIGN KEY (codProductoPack) REFERENCES Producto(codProducto),
+    FOREIGN KEY (codProductoComponente) REFERENCES Producto(codProducto)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 
 CREATE TABLE TipoOperacion (
     codTipoOperacion INT AUTO_INCREMENT PRIMARY KEY,
@@ -197,7 +212,8 @@ INSERT INTO TipoOperacion (codTipoOperacion, descripcion) VALUES
 (1, 'Ingreso'),
 (2, 'Venta'),
 (3, 'Extorno'),
-(4, 'Ajuste');
+(4, 'Ajuste'),
+(5, 'Menudeo');
 
 INSERT INTO Rol (idRol, nombreRol, estado) VALUES
 (1, 'Superusuario', TRUE),

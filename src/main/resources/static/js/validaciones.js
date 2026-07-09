@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       this.querySelectorAll('[required]').forEach(function (el) {
+        if (el.disabled) return;
         if (!el.value || el.value.trim() === '') {
           mostrarError(el, 'Este campo es obligatorio');
           if (!firstError) firstError = el;
@@ -167,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
       this.querySelectorAll('[data-val]').forEach(function (el) {
+        if (el.disabled) return;
         var validator = el.getAttribute('data-val');
         if (window['val_' + validator]) {
           window['val_' + validator](el);
@@ -189,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var cantUnd = this.querySelector('[name="cantidadUnidad"]');
       var cantFracc = this.querySelector('[name="cantidadFraccion"]');
-      if (cantUnd && cantFracc) {
+      if (cantUnd && cantFracc && !cantUnd.disabled && !cantFracc.disabled) {
         var cu = parseInt(cantUnd.value, 10) || 0;
         var cf = parseInt(cantFracc.value, 10) || 0;
         if (cu === 0 && cf === 0) {

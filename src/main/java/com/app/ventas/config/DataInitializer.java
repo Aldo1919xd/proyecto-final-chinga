@@ -66,7 +66,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (tipoOperacionRepository.count() == 0) {
-            for (String op : new String[]{"Ingreso", "Venta", "Extorno", "Ajuste"}) {
+            for (String op : new String[]{"Ingreso", "Venta", "Extorno", "Ajuste", "Menudeo"}) {
                 TipoOperacion to = new TipoOperacion();
                 to.setDescripcion(op);
                 tipoOperacionRepository.save(to);
@@ -74,13 +74,63 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (funcionalidadRepository.count() == 0) {
-            for (String nombre : new String[]{"Dashboard", "Usuarios", "Roles",
-                    "Clientes", "Categorias", "Productos", "Ingresos",
-                    "Ventas", "Kardex", "Auditoria"}) {
-                Funcionalidad f = new Funcionalidad();
-                f.setNombre(nombre);
-                funcionalidadRepository.save(f);
-            }
+            Funcionalidad seguridad = new Funcionalidad();
+            seguridad.setNombre("Seguridad");
+            seguridad = funcionalidadRepository.save(seguridad);
+
+            Funcionalidad dashboard = new Funcionalidad();
+            dashboard.setNombre("Dashboard");
+            funcionalidadRepository.save(dashboard);
+
+            Funcionalidad clientes = new Funcionalidad();
+            clientes.setNombre("Clientes");
+            funcionalidadRepository.save(clientes);
+
+            Funcionalidad categorias = new Funcionalidad();
+            categorias.setNombre("Categorias");
+            funcionalidadRepository.save(categorias);
+
+            Funcionalidad productos = new Funcionalidad();
+            productos.setNombre("Productos");
+            funcionalidadRepository.save(productos);
+
+            Funcionalidad ingresos = new Funcionalidad();
+            ingresos.setNombre("Ingresos");
+            funcionalidadRepository.save(ingresos);
+
+            Funcionalidad ventasParent = new Funcionalidad();
+            ventasParent.setNombre("Ventas");
+            ventasParent = funcionalidadRepository.save(ventasParent);
+
+            Funcionalidad kardex = new Funcionalidad();
+            kardex.setNombre("Kardex");
+            funcionalidadRepository.save(kardex);
+
+            Funcionalidad auditoria = new Funcionalidad();
+            auditoria.setNombre("Auditoria");
+            funcionalidadRepository.save(auditoria);
+
+            Funcionalidad usuarios = new Funcionalidad();
+            usuarios.setNombre("Usuarios");
+            usuarios.setPadre(seguridad);
+            funcionalidadRepository.save(usuarios);
+
+            Funcionalidad roles = new Funcionalidad();
+            roles.setNombre("Roles");
+            roles.setPadre(seguridad);
+            funcionalidadRepository.save(roles);
+
+
+
+            Funcionalidad registrarVenta = new Funcionalidad();
+            registrarVenta.setNombre("Registrar Venta");
+            registrarVenta.setPadre(ventasParent);
+            funcionalidadRepository.save(registrarVenta);
+
+            Funcionalidad anularVenta = new Funcionalidad();
+            anularVenta.setNombre("Anular Venta");
+            anularVenta.setPadre(ventasParent);
+            funcionalidadRepository.save(anularVenta);
         }
 
         if (rolFuncionalidadRepository.count() == 0) {
@@ -99,26 +149,28 @@ public class DataInitializer implements CommandLineRunner {
                         rf.setEditar(true);
                         rf.setEliminar(true);
                         if (f.getNombre().equals("Dashboard") || f.getNombre().equals("Kardex")
-                                || f.getNombre().equals("Auditoria")) {
+                                || f.getNombre().equals("Auditoria") || f.getNombre().equals("Seguridad")) {
                             rf.setEliminar(false);
                             rf.setEditar(false);
                             rf.setCrear(false);
                         }
                         if (f.getNombre().equals("Clientes") || f.getNombre().equals("Productos")
-                                || f.getNombre().equals("Ventas") || f.getNombre().equals("Kardex")) {
+                                || f.getNombre().equals("Ventas") || f.getNombre().equals("Kardex")
+                                || f.getNombre().equals("Registrar Venta")) {
                             rf.setImprimir(true);
                         }
                     } else if (r.getIdRol() == 2) {
-                        if (!f.getNombre().equals("Clientes") && !f.getNombre().equals("Productos")
-                                && !f.getNombre().equals("Ventas") && !f.getNombre().equals("Dashboard")
-                                && !f.getNombre().equals("Kardex")) {
+                        if (f.getNombre().equals("Seguridad") || f.getNombre().equals("Usuarios")
+                                || f.getNombre().equals("Roles")
+                                || f.getNombre().equals("Categorias") || f.getNombre().equals("Ingresos")
+                                || f.getNombre().equals("Auditoria") || f.getNombre().equals("Anular Venta")) {
                             rf.setVer(false);
                         }
                         if (f.getNombre().equals("Clientes")) {
                             rf.setCrear(true);
                             rf.setEditar(true);
                         }
-                        if (f.getNombre().equals("Ventas")) {
+                        if (f.getNombre().equals("Registrar Venta")) {
                             rf.setCrear(true);
                             rf.setImprimir(true);
                         }
@@ -126,9 +178,11 @@ public class DataInitializer implements CommandLineRunner {
                             rf.setImprimir(true);
                         }
                     } else if (r.getIdRol() == 3) {
-                        if (!f.getNombre().equals("Productos") && !f.getNombre().equals("Categorias")
-                                && !f.getNombre().equals("Ingresos") && !f.getNombre().equals("Kardex")
-                                && !f.getNombre().equals("Dashboard")) {
+                        if (f.getNombre().equals("Seguridad") || f.getNombre().equals("Usuarios")
+                                || f.getNombre().equals("Roles")
+                                || f.getNombre().equals("Clientes") || f.getNombre().equals("Ventas")
+                                || f.getNombre().equals("Registrar Venta") || f.getNombre().equals("Anular Venta")
+                                || f.getNombre().equals("Auditoria")) {
                             rf.setVer(false);
                         }
                         if (f.getNombre().equals("Productos") || f.getNombre().equals("Categorias")
@@ -140,8 +194,11 @@ public class DataInitializer implements CommandLineRunner {
                             rf.setImprimir(true);
                         }
                     } else if (r.getIdRol() == 4) {
-                        if (!f.getNombre().equals("Dashboard") && !f.getNombre().equals("Ventas")
-                                && !f.getNombre().equals("Kardex") && !f.getNombre().equals("Auditoria")) {
+                        if (f.getNombre().equals("Seguridad") || f.getNombre().equals("Usuarios")
+                                || f.getNombre().equals("Roles")
+                                || f.getNombre().equals("Clientes") || f.getNombre().equals("Categorias")
+                                || f.getNombre().equals("Productos") || f.getNombre().equals("Ingresos")
+                                || f.getNombre().equals("Registrar Venta") || f.getNombre().equals("Anular Venta")) {
                             rf.setVer(false);
                         }
                         if (f.getNombre().equals("Ventas") || f.getNombre().equals("Kardex")) {

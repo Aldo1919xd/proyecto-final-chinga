@@ -89,6 +89,9 @@ public class VentaService {
             detalle.setSubtotal(precio.multiply(BigDecimal.valueOf(detalle.getCantidad())));
             subtotalTotal = subtotalTotal.add(detalle.getSubtotal());
 
+            int unidadesConvertidas = 0;
+            String docNro = tipoComprobante + "-" + serie + "-" + correlativo.getNumeroActual();
+
             if (detalle.getTipoVenta().equals("FRACCION")) {
                 int needed = detalle.getCantidad();
                 int available = producto.getCantidadFraccion() + producto.getCantidadUnidad() * 10;
@@ -98,6 +101,7 @@ public class VentaService {
                 while (producto.getCantidadFraccion() < needed && producto.getCantidadUnidad() > 0) {
                     producto.setCantidadUnidad(producto.getCantidadUnidad() - 1);
                     producto.setCantidadFraccion(producto.getCantidadFraccion() + 10);
+                    unidadesConvertidas++;
                 }
                 producto.setCantidadFraccion(producto.getCantidadFraccion() - needed);
             } else {
@@ -109,16 +113,56 @@ public class VentaService {
 
             productoRepository.save(producto);
 
+            // Si se convirtieron unidades a fracciones (Menudeo automático)
+            if (unidadesConvertidas > 0) {
+                // 1. Salida de Unidades por conversión
+                Kardex kSalidaU = new Kardex();
+                kSalidaU.setProducto(producto);
+                kSalidaU.setTipoOperacion(new TipoOperacion(5)); // Menudeo
+                kSalidaU.setCantidadInicial(stockUndAntes);
+                kSalidaU.setCantidadMovimiento(unidadesConvertidas);
+                kSalidaU.setCantidadFinal(stockUndAntes - unidadesConvertidas);
+                kSalidaU.setSaldoUnitario(stockUndAntes - unidadesConvertidas);
+                kSalidaU.setSaldoFraccionario(stockFraccAntes);
+                kSalidaU.setCodDocumento(docNro);
+                kSalidaU.setObservacion("[U] Conversión automática (Menudeo)");
+                kSalidaU.setUsuarioRegistro(usuarioActual);
+                kardexRepository.save(kSalidaU);
+
+                // 2. Entrada de Fracciones por conversión
+                Kardex kEntradaF = new Kardex();
+                kEntradaF.setProducto(producto);
+                kEntradaF.setTipoOperacion(new TipoOperacion(5)); // Menudeo
+                kEntradaF.setCantidadInicial(stockFraccAntes);
+                kEntradaF.setCantidadMovimiento(unidadesConvertidas * 10);
+                kEntradaF.setCantidadFinal(stockFraccAntes + (unidadesConvertidas * 10));
+                kEntradaF.setSaldoUnitario(stockUndAntes - unidadesConvertidas);
+                kEntradaF.setSaldoFraccionario(stockFraccAntes + (unidadesConvertidas * 10));
+                kEntradaF.setCodDocumento(docNro);
+                kEntradaF.setObservacion("[F] Conversión automática (Menudeo)");
+                kEntradaF.setUsuarioRegistro(usuarioActual);
+                kardexRepository.save(kEntradaF);
+            }
+
+            // Registrar la Venta (Venta) en Kardex
             Kardex kardex = new Kardex();
             kardex.setProducto(producto);
-            kardex.setTipoOperacion(new TipoOperacion(2));
-            kardex.setCantidadInicial(detalle.getTipoVenta().equals("UNIDAD") ? stockUndAntes : stockFraccAntes);
-            kardex.setCantidadMovimiento(detalle.getCantidad());
-            kardex.setCantidadFinal(detalle.getTipoVenta().equals("UNIDAD")
-                    ? producto.getCantidadUnidad() : producto.getCantidadFraccion());
+            kardex.setTipoOperacion(new TipoOperacion(2)); // Venta
+            if (detalle.getTipoVenta().equals("FRACCION")) {
+                int inicialF = stockFraccAntes + (unidadesConvertidas * 10);
+                kardex.setCantidadInicial(inicialF);
+                kardex.setCantidadMovimiento(detalle.getCantidad());
+                kardex.setCantidadFinal(inicialF - detalle.getCantidad());
+                kardex.setObservacion("[F] Venta de fracciones");
+            } else {
+                kardex.setCantidadInicial(stockUndAntes);
+                kardex.setCantidadMovimiento(detalle.getCantidad());
+                kardex.setCantidadFinal(stockUndAntes - detalle.getCantidad());
+                kardex.setObservacion("[U] Venta de unidades");
+            }
             kardex.setSaldoUnitario(producto.getCantidadUnidad());
             kardex.setSaldoFraccionario(producto.getCantidadFraccion());
-            kardex.setCodDocumento(tipoComprobante + "-" + serie + "-" + correlativo.getNumeroActual());
+            kardex.setCodDocumento(docNro);
             kardex.setUsuarioRegistro(usuarioActual);
             kardexRepository.save(kardex);
         }

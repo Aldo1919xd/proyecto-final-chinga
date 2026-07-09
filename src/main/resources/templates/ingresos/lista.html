@@ -9,12 +9,13 @@
     <h2>Ingresos</h2>
     <a href="/ingresos/nuevo" class="btn btn-primary">Nuevo Ingreso</a>
   </div>
-  <div class="table-wrapper">
+  <div class="table-wrapper table-responsive-stack">
     <table class="table table-bordered table-hover">
       <thead>
         <tr>
           <th>Codigo</th>
           <th>Producto</th>
+          <th>Cant x Item</th>
           <th>Unidades</th>
           <th>Fracciones</th>
           <th>Observacion</th>
@@ -24,13 +25,14 @@
       </thead>
       <tbody>
         <tr th:each="i : ${ingresos}">
-          <td th:text="${i.codIngreso}">1</td>
-          <td th:text="${i.producto.nombreProducto}">Producto</td>
-          <td th:text="${i.cantidadUnidad}">0</td>
-          <td th:text="${i.cantidadFraccion}">0</td>
-          <td th:text="${i.observacion}">-</td>
-          <td th:text="${#temporals.format(i.fechaHora, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 00:00:00</td>
-          <td th:text="${i.usuarioRegistro.usuario}">admin</td>
+          <td data-label="Codigo" th:text="${i.codIngreso}">1</td>
+          <td data-label="Producto" th:text="${i.producto.nombreProducto}">Producto</td>
+          <td data-label="Cant x Item" th:text="${i.producto.cantidadItem}">1</td>
+          <td data-label="Unidades" th:text="${i.cantidadUnidad}">0</td>
+          <td data-label="Fracciones" th:text="${i.cantidadFraccion}">0</td>
+          <td data-label="Observacion" th:text="${i.observacion}">-</td>
+          <td data-label="Fecha" th:text="${#temporals.format(i.fechaHora, 'yyyy-MM-dd HH:mm:ss')}">2024-01-01 00:00:00</td>
+          <td data-label="Usuario" th:text="${i.usuarioRegistro.usuario}">admin</td>
         </tr>
       </tbody>
     </table>

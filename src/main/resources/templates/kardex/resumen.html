@@ -14,7 +14,7 @@
     <div class="col-md-4">
       <select name="productoId" class="form-select" required>
         <option value="">-- Seleccione Producto --</option>
-        <option th:each="p : ${productos}" th:value="${p.codProducto}" th:text="${p.codProducto + ' - ' + p.nombreProducto}" th:selected="${param.productoId != null and param.productoId[0] == p.codProducto.toString()}"></option>
+        <option th:each="p : ${productos}" th:value="${p.codProducto}" th:text="${p.codProducto + ' - ' + p.nombreProducto + ' (Cant x Item: ' + p.cantidadItem + ')'}" th:selected="${param.productoId != null and param.productoId[0] == p.codProducto.toString()}"></option>
       </select>
     </div>
     <div class="col-auto">
@@ -24,7 +24,7 @@
 
   <div th:if="${productoSeleccionado != null}">
     <div class="row text-center mb-4">
-      <div class="col-md-6">
+      <div class="col-md-4 mb-2">
         <div class="card bg-light">
           <div class="card-body">
             <h6 class="text-success">Saldo Unidad</h6>
@@ -32,7 +32,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-4 mb-2">
         <div class="card bg-light">
           <div class="card-body">
             <h6 class="text-primary">Saldo Fracción</h6>
@@ -40,15 +40,24 @@
           </div>
         </div>
       </div>
+      <div class="col-md-4 mb-2">
+        <div class="card bg-light">
+          <div class="card-body">
+            <h6 class="text-info">Cant x Item</h6>
+            <h4 th:text="${productoSeleccionado.cantidadItem}">1</h4>
+          </div>
+        </div>
+      </div>
     </div>
     
-    <div class="table-wrapper">
+    <div class="table-wrapper table-responsive-stack">
       <table class="table table-bordered table-hover text-center">
         <thead class="table-light">
           <tr>
             <th>Fecha</th>
             <th>Tipo Oper.</th>
             <th>Documento</th>
+            <th>Cant x Item</th>
             <th class="text-success">Entrada (U)</th>
             <th class="text-danger">Salida (U)</th>
             <th class="text-success">Entrada (F)</th>
@@ -60,19 +69,20 @@
         </thead>
         <tbody>
           <tr th:each="k : ${movimientos}">
-            <td th:text="${#temporals.format(k.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</td>
-            <td th:text="${k.tipoOperacion.descripcion}">Oper</td>
-            <td th:text="${k.codDocumento}">Doc</td>
+            <td data-label="Fecha" th:text="${#temporals.format(k.fechaHora, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+            <td data-label="Tipo Oper." th:text="${k.tipoOperacion.descripcion}">Oper</td>
+            <td data-label="Documento" th:text="${k.codDocumento}">Doc</td>
+            <td data-label="Cant x Item" th:text="${productoSeleccionado.cantidadItem}">1</td>
             
-            <td class="text-success" th:text="${k.tipoOperacion.codTipoOperacion == 1 ? k.cantidadMovimiento : 0}">0</td>
-            <td class="text-danger" th:text="${k.tipoOperacion.codTipoOperacion == 2 ? k.cantidadMovimiento : 0}">0</td>
+            <td data-label="Entrada (U)" class="text-success" th:text="${(k.tipoOperacion.codTipoOperacion == 1 or (k.tipoOperacion.codTipoOperacion == 5 and k.cantidadFinal gt k.cantidadInicial)) and (k.observacion != null and k.observacion.startsWith('[U]')) ? k.cantidadMovimiento : 0}">0</td>
+            <td data-label="Salida (U)" class="text-danger" th:text="${(k.tipoOperacion.codTipoOperacion == 2 or (k.tipoOperacion.codTipoOperacion == 5 and k.cantidadFinal lt k.cantidadInicial)) and (k.observacion != null and k.observacion.startsWith('[U]')) ? k.cantidadMovimiento : 0}">0</td>
             
-            <td class="text-success">0</td>
-            <td class="text-danger">0</td>
+            <td data-label="Entrada (F)" class="text-success" th:text="${(k.tipoOperacion.codTipoOperacion == 1 or (k.tipoOperacion.codTipoOperacion == 5 and k.cantidadFinal gt k.cantidadInicial)) and (k.observacion != null and k.observacion.startsWith('[F]')) ? k.cantidadMovimiento : 0}">0</td>
+            <td data-label="Salida (F)" class="text-danger" th:text="${(k.tipoOperacion.codTipoOperacion == 2 or (k.tipoOperacion.codTipoOperacion == 5 and k.cantidadFinal lt k.cantidadInicial)) and (k.observacion != null and k.observacion.startsWith('[F]')) ? k.cantidadMovimiento : 0}">0</td>
             
-            <td th:text="${k.saldoUnitario}">0</td>
-            <td th:text="${k.saldoFraccionario}">0</td>
-            <td th:text="${k.observacion}"></td>
+            <td data-label="Saldo U" th:text="${k.saldoUnitario}">0</td>
+            <td data-label="Saldo F" th:text="${k.saldoFraccionario}">0</td>
+            <td data-label="Obs." th:text="${k.observacion}"></td>
           </tr>
         </tbody>
       </table>

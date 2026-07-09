@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Producto")
@@ -26,11 +28,11 @@ public class Producto {
     @JoinColumn(name = "codCategoria", nullable = false)
     private Categoria categoria;
 
-    @DecimalMin(value = "0.01", message = "El precio unitario debe ser mayor a 0")
+    @DecimalMin(value = "0.00", message = "El precio unitario no puede ser negativo")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precioUnitario = BigDecimal.ZERO;
 
-    @DecimalMin(value = "0.01", message = "El precio fraccion debe ser mayor a 0")
+    @DecimalMin(value = "0.00", message = "El precio fraccion no puede ser negativo")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal precioFraccion = BigDecimal.ZERO;
 
@@ -43,11 +45,22 @@ public class Producto {
     private Integer cantidadFraccion = 0;
 
     @Column(nullable = false)
+    private Boolean esPack = false;
+
+    @Min(value = 1, message = "La cantidad por item debe ser mayor a 0")
+    @Column(nullable = false)
+    private Integer cantidadItem = 1;
+
+    @Column(nullable = false)
     private Boolean estado = true;
 
     @Version
     @Column(nullable = false)
     private Integer version = 0;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @OneToMany(mappedBy = "productoPack", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductoComposicion> composiciones = new ArrayList<>();
 
     public Producto() {}
 
@@ -69,8 +82,14 @@ public class Producto {
     public void setCantidadUnidad(Integer cantidadUnidad) { this.cantidadUnidad = cantidadUnidad; }
     public Integer getCantidadFraccion() { return cantidadFraccion; }
     public void setCantidadFraccion(Integer cantidadFraccion) { this.cantidadFraccion = cantidadFraccion; }
+    public Boolean getEsPack() { return esPack; }
+    public void setEsPack(Boolean esPack) { this.esPack = esPack; }
+    public Integer getCantidadItem() { return cantidadItem; }
+    public void setCantidadItem(Integer cantidadItem) { this.cantidadItem = cantidadItem; }
     public Boolean getEstado() { return estado; }
     public void setEstado(Boolean estado) { this.estado = estado; }
     public Integer getVersion() { return version; }
     public void setVersion(Integer version) { this.version = version; }
+    public List<ProductoComposicion> getComposiciones() { return composiciones; }
+    public void setComposiciones(List<ProductoComposicion> composiciones) { this.composiciones = composiciones; }
 }

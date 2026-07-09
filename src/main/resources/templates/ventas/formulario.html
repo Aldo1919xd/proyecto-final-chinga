@@ -132,6 +132,7 @@
                 <th>Codigo</th>
                 <th>Nombre</th>
                 <th>P. Unitario</th>
+                <th>Cant x Item</th>
                 <th>Stock Und</th>
                 <th>Stock Fracc</th>
                 <th></th>
@@ -291,7 +292,7 @@ function buscarProductos(q) {
       data.forEach(function (p) {
         var tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
-        tr.innerHTML = '<td>' + p.codProducto + '</td><td>' + p.nombreProducto + '</td><td>S/ ' + p.precioUnitario + '</td><td>' + p.cantidadUnidad + '</td><td>' + p.cantidadFraccion + '</td><td><button class="btn btn-sm btn-outline-primary">Seleccionar</button></td>';
+        tr.innerHTML = '<td>' + p.codProducto + '</td><td>' + p.nombreProducto + '</td><td>S/ ' + p.precioUnitario + '</td><td>' + p.cantidadItem + '</td><td>' + p.cantidadUnidad + '</td><td>' + p.cantidadFraccion + '</td><td><button class="btn btn-sm btn-outline-primary">Seleccionar</button></td>';
         tr.addEventListener('click', function () {
           var targetRow = filaProductoActual || document.querySelector('#tablaDetalle tbody tr:last-child');
           targetRow.querySelector('.producto-id').value = p.codProducto;

@@ -30,7 +30,7 @@
           <td>
             <a th:href="@{/roles/editar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-primary">Editar</a>
             <a th:href="@{/roles/permisos/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-info">Permisos</a>
-            <a th:href="@{/roles/eliminar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-danger"
+            <a th:if="${rol.idRol != 1}" th:href="@{/roles/eliminar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('Eliminar este rol?')">Eliminar</a>
           </td>
         </tr>

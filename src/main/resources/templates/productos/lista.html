@@ -5,11 +5,13 @@
 <div th:replace="fragmentos :: navbar"></div>
 
 <div class="container content">
+  <div th:if="${param.exitoMenudeo}" class="alert alert-success">Pack desarmado correctamente</div>
+  <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">Error</div>
   <div class="page-header">
     <h2>Productos</h2>
     <a href="/productos/nuevo" class="btn btn-primary">Nuevo Producto</a>
   </div>
-  <div class="table-wrapper">
+  <div class="table-wrapper table-responsive-stack">
     <table class="table table-bordered table-hover">
       <thead>
         <tr>
@@ -20,27 +22,31 @@
           <th>P. Fraccion</th>
           <th>Stock Und</th>
           <th>Stock Fracc</th>
+          <th>Cant x Item</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         <tr th:each="p : ${productos}">
-          <td th:text="${p.codProducto}">1</td>
-          <td th:text="${p.nombreProducto}">Producto</td>
-          <td th:text="${p.categoria.nombreCategoria}">Categoria</td>
-          <td th:text="${p.precioUnitario}">0.00</td>
-          <td th:text="${p.precioFraccion}">0.00</td>
-          <td th:text="${p.cantidadUnidad}">0</td>
-          <td th:text="${p.cantidadFraccion}">0</td>
-          <td>
+          <td data-label="Codigo" th:text="${p.codProducto}">1</td>
+          <td data-label="Nombre" th:text="${p.nombreProducto}">Producto</td>
+          <td data-label="Categoria" th:text="${p.categoria.nombreCategoria}">Categoria</td>
+          <td data-label="P. Unitario" th:text="${p.precioUnitario}">0.00</td>
+          <td data-label="P. Fraccion" th:text="${p.precioFraccion}">0.00</td>
+          <td data-label="Stock Und" th:text="${p.cantidadUnidad}">0</td>
+          <td data-label="Stock Fracc" th:text="${p.cantidadFraccion}">0</td>
+          <td data-label="Cant x Item" th:text="${p.cantidadItem}">1</td>
+          <td data-label="Estado">
             <span th:if="${p.estado}" class="badge bg-success">Activo</span>
             <span th:unless="${p.estado}" class="badge bg-danger">Inactivo</span>
           </td>
-          <td>
+          <td data-label="Acciones">
             <a th:href="@{/productos/editar/{id}(id=${p.codProducto})}" class="btn btn-sm btn-outline-primary">Editar</a>
             <a th:href="@{/productos/eliminar/{id}(id=${p.codProducto})}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('Eliminar este producto?')">Eliminar</a>
+            <button th:if="${p.esPack}" type="button" class="btn btn-sm btn-outline-info btn-menudear"
+                    th:data-id="${p.codProducto}" th:data-nombre="${p.nombreProducto}">Menudear</button>
           </td>
         </tr>
       </tbody>
@@ -48,6 +54,47 @@
   </div>
 </div>
 
+<div class="modal fade" id="menudeoModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form method="post" th:action="@{/productos/menudear}">
+        <input type="hidden" name="codProducto" id="modalCodProducto">
+        <div class="modal-header">
+          <h5 class="modal-title">Menudear Pack</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p id="modalProductoName"></p>
+          <label class="form-label">Cantidad de packs a desarmar</label>
+          <input type="number" name="cantidad" class="form-control" value="1" min="1" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Desarmar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div th:replace="fragmentos :: scripts"></div>
+<script>
+function menudear(id, nombre) {
+  document.getElementById('modalCodProducto').value = id;
+  document.getElementById('modalProductoName').textContent = 'Desarmar: ' + nombre;
+  var modal = new bootstrap.Modal(document.getElementById('menudeoModal'));
+  modal.show();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.btn-menudear').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = this.getAttribute('data-id');
+      var nombre = this.getAttribute('data-nombre');
+      menudear(id, nombre);
+    });
+  });
+});
+</script>
 </body>
 </html>

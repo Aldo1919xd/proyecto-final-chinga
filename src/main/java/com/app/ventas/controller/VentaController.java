@@ -35,19 +35,13 @@ public class VentaController {
     }
 
     @GetMapping
-    public String listar(Model model, Authentication auth, HttpSession session) {
-        if (requiereVerificacion2fa(auth, session)) {
-            return "redirect:/usuarios/2fa/verificar-sesion?redirect=/ventas";
-        }
+    public String listar(Model model) {
         model.addAttribute("ventas", ventaService.listarTodas());
         return "ventas/lista";
     }
 
     @GetMapping("/nuevo")
-    public String nuevo(Model model, Authentication auth, HttpSession session) {
-        if (requiereVerificacion2fa(auth, session)) {
-            return "redirect:/usuarios/2fa/verificar-sesion?redirect=/ventas/nuevo";
-        }
+    public String nuevo(Model model) {
         model.addAttribute("venta", new VentaCabecera());
         model.addAttribute("clientes", clienteService.listarActivos());
         model.addAttribute("productos", productoService.listarActivos());
@@ -113,15 +107,5 @@ public class VentaController {
             return "redirect:/ventas/nuevo?error=" + e.getMessage();
         }
         return "redirect:/ventas/nuevo?exito";
-    }
-
-    private boolean requiereVerificacion2fa(Authentication auth, HttpSession session) {
-        if (auth == null || !auth.isAuthenticated()) return false;
-        Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElse(null);
-        if (actual == null) return false;
-        boolean tiene2fa = actual.getSecretKey2fa() != null && !actual.getSecretKey2fa().isEmpty();
-        if (!tiene2fa) return false;
-        Boolean verificado = (Boolean) session.getAttribute("2fa_verified");
-        return verificado == null || !verificado;
     }
 }

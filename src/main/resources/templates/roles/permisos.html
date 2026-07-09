@@ -10,55 +10,61 @@
   </div>
 
   <form th:action="@{/roles/permisos/{id}/guardar(id=${rol.idRol})}" method="post">
-    <div class="table-wrapper">
-      <table class="table table-bordered">
-        <thead>
-          <tr>
-            <th style="min-width: 220px">Funcionalidad</th>
-            <th class="text-center">Ver</th>
-            <th class="text-center">Crear</th>
-            <th class="text-center">Editar</th>
-            <th class="text-center">Eliminar</th>
-            <th class="text-center">Imprimir</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="item : ${arbol}"
+    <div class="card">
+      <div class="p-0">
+        <ul class="list-unstyled mb-0 tree-list">
+          <li th:each="item : ${arbol}"
               th:classappend="${item.depth > 0 ? 'tree-child' : ''}"
               th:data-parent="${item.funcionalidad.padre?.idFuncionalidad}"
-              th:attr="data-depth=${item.depth}">
-            <td style="padding-left: calc(1rem + 1.5rem * ${item.depth})">
+              th:attr="data-depth=${item.depth},data-id=${item.funcionalidad.idFuncionalidad}">
+            <div th:style="'padding-left: calc(0.75rem + 1.5rem * ' + ${item.depth} + ')'">
+              <div class="d-flex align-items-center gap-2">
               <span th:if="${item.hasChildren}" class="tree-toggle"
-                    th:attr="data-target='#children-' + ${item.funcionalidad.idFuncionalidad}"
-                    style="cursor:pointer; margin-right:4px; user-select:none;">
+                    th:attr="data-tree-id=${item.funcionalidad.idFuncionalidad}"
+                    style="cursor:pointer;margin-right:4px;user-select:none">
                 <span class="tree-icon">&#9660;</span>
               </span>
-              <span th:unless="${item.hasChildren}" style="margin-right:16px"></span>
-              <span th:text="${item.funcionalidad.nombre}">Funcionalidad</span>
-            </td>
-            <td class="text-center">
-              <input type="checkbox" name="ver" th:value="${item.funcionalidad.idFuncionalidad}"
-                     th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).ver}">
-            </td>
-            <td class="text-center">
-              <input type="checkbox" name="crear" th:value="${item.funcionalidad.idFuncionalidad}"
-                     th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).crear}">
-            </td>
-            <td class="text-center">
-              <input type="checkbox" name="editar" th:value="${item.funcionalidad.idFuncionalidad}"
-                     th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).editar}">
-            </td>
-            <td class="text-center">
-              <input type="checkbox" name="eliminar" th:value="${item.funcionalidad.idFuncionalidad}"
-                     th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).eliminar}">
-            </td>
-            <td class="text-center">
-              <input type="checkbox" name="imprimir" th:value="${item.funcionalidad.idFuncionalidad}"
-                     th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).imprimir}">
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <span th:unless="${item.hasChildren}" style="margin-right:16px;display:inline-block"></span>
+              <input type="checkbox" class="tree-master-check" th:attr="data-master-id=${item.funcionalidad.idFuncionalidad}"
+                     th:checked="${#maps.containsKey(permisosMap, item.funcionalidad.idFuncionalidad)
+                       and permisosMap.get(item.funcionalidad.idFuncionalidad).ver
+                       and permisosMap.get(item.funcionalidad.idFuncionalidad).crear
+                       and permisosMap.get(item.funcionalidad.idFuncionalidad).editar
+                       and permisosMap.get(item.funcionalidad.idFuncionalidad).eliminar
+                       and permisosMap.get(item.funcionalidad.idFuncionalidad).imprimir}">
+              <span th:text="${item.funcionalidad.nombre}" class="fw-medium tree-checks-toggle" style="cursor:pointer">Funcionalidad</span>
+              </div>
+              <div class="tree-checks ms-4">
+                <label class="tree-check-label">
+                  <input type="checkbox" name="ver" th:value="${item.funcionalidad.idFuncionalidad}"
+                         th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).ver}">
+                  <span class="ms-2">Ver</span>
+                </label>
+                <label class="tree-check-label">
+                  <input type="checkbox" name="crear" th:value="${item.funcionalidad.idFuncionalidad}"
+                         th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).crear}">
+                  <span class="ms-2">Crear</span>
+                </label>
+                <label class="tree-check-label">
+                  <input type="checkbox" name="editar" th:value="${item.funcionalidad.idFuncionalidad}"
+                         th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).editar}">
+                  <span class="ms-2">Editar</span>
+                </label>
+                <label class="tree-check-label">
+                  <input type="checkbox" name="eliminar" th:value="${item.funcionalidad.idFuncionalidad}"
+                         th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).eliminar}">
+                  <span class="ms-2">Eliminar</span>
+                </label>
+                <label class="tree-check-label">
+                  <input type="checkbox" name="imprimir" th:value="${item.funcionalidad.idFuncionalidad}"
+                         th:checked="${permisosMap.containsKey(item.funcionalidad.idFuncionalidad) and permisosMap.get(item.funcionalidad.idFuncionalidad).imprimir}">
+                  <span class="ms-2">Imprimir</span>
+                </label>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="mt-3">
       <button type="submit" class="btn btn-primary">Aplicar</button>

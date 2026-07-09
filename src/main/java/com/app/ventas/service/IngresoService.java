@@ -44,17 +44,33 @@ public class IngresoService {
         producto.setCantidadFraccion(stockFraccAntes + ingreso.getCantidadFraccion());
         productoRepository.save(producto);
 
-        Kardex kardex = new Kardex();
-        kardex.setProducto(producto);
-        kardex.setTipoOperacion(new TipoOperacion(1));
-        kardex.setCantidadInicial(stockUndAntes);
-        kardex.setCantidadMovimiento(ingreso.getCantidadUnidad());
-        kardex.setCantidadFinal(producto.getCantidadUnidad());
-        kardex.setSaldoUnitario(producto.getCantidadUnidad());
-        kardex.setSaldoFraccionario(producto.getCantidadFraccion());
-        kardex.setObservacion(ingreso.getObservacion());
-        kardex.setUsuarioRegistro(usuarioActual);
-        kardexRepository.save(kardex);
+        if (ingreso.getCantidadUnidad() != null && ingreso.getCantidadUnidad() > 0) {
+            Kardex kU = new Kardex();
+            kU.setProducto(producto);
+            kU.setTipoOperacion(new TipoOperacion(1)); // Ingreso
+            kU.setCantidadInicial(stockUndAntes);
+            kU.setCantidadMovimiento(ingreso.getCantidadUnidad());
+            kU.setCantidadFinal(stockUndAntes + ingreso.getCantidadUnidad());
+            kU.setSaldoUnitario(stockUndAntes + ingreso.getCantidadUnidad());
+            kU.setSaldoFraccionario(stockFraccAntes + ingreso.getCantidadFraccion());
+            kU.setObservacion("[U] " + (ingreso.getObservacion() != null ? ingreso.getObservacion() : "Ingreso de unidades"));
+            kU.setUsuarioRegistro(usuarioActual);
+            kardexRepository.save(kU);
+        }
+
+        if (ingreso.getCantidadFraccion() != null && ingreso.getCantidadFraccion() > 0) {
+            Kardex kF = new Kardex();
+            kF.setProducto(producto);
+            kF.setTipoOperacion(new TipoOperacion(1)); // Ingreso
+            kF.setCantidadInicial(stockFraccAntes);
+            kF.setCantidadMovimiento(ingreso.getCantidadFraccion());
+            kF.setCantidadFinal(stockFraccAntes + ingreso.getCantidadFraccion());
+            kF.setSaldoUnitario(stockUndAntes + ingreso.getCantidadUnidad());
+            kF.setSaldoFraccionario(stockFraccAntes + ingreso.getCantidadFraccion());
+            kF.setObservacion("[F] " + (ingreso.getObservacion() != null ? ingreso.getObservacion() : "Ingreso de fracciones"));
+            kF.setUsuarioRegistro(usuarioActual);
+            kardexRepository.save(kF);
+        }
 
         ingreso.setUsuarioRegistro(usuarioActual);
         IngresoProducto guardado = ingresoRepository.save(ingreso);

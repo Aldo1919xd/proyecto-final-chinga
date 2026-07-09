@@ -15,7 +15,7 @@
             <label class="form-label">Producto</label>
             <select name="producto.codProducto" class="form-select" required>
               <option value="">Seleccione...</option>
-              <option th:each="p : ${productos}" th:value="${p.codProducto}" th:text="${p.nombreProducto}"></option>
+              <option th:each="p : ${productos}" th:value="${p.codProducto}" th:text="${p.nombreProducto + ' (Cant x Item: ' + p.cantidadItem + ')'}"></option>
             </select>
             <div class="invalid-feedback"></div>
           </div>
