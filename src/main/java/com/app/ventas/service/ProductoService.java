@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -66,8 +68,25 @@ public class ProductoService {
     public Producto guardar(Producto producto, List<Integer> componenteIds, List<Integer> componenteCantidades,
                             Usuario usuarioActual, HttpServletRequest request) {
         boolean esNuevo = producto.getCodProducto() == null;
+        Map<Integer, Producto> compMap = new HashMap<>();
 
-        if (Boolean.TRUE.equals(producto.getEsPack()) && componenteIds != null && !componenteIds.isEmpty()) {
+        if (Boolean.TRUE.equals(producto.getEsPack())) {
+            if (componenteIds == null || componenteIds.isEmpty()) {
+                throw new RuntimeException("Un pack debe tener al menos un componente");
+            }
+            List<Integer> ids = componenteIds.stream()
+                    .filter(id -> id != null)
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<Producto> componentes = productoRepository.findAllById(ids);
+            for (Producto comp : componentes) {
+                compMap.put(comp.getCodProducto(), comp);
+                if (comp.getPrecioUnitario() == null
+                        || comp.getPrecioUnitario().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new RuntimeException("El componente \"" + comp.getNombreProducto()
+                            + "\" tiene precio 0. Asígnale un precio primero.");
+                }
+            }
             int totalItem = 0;
             for (int i = 0; i < componenteIds.size(); i++) {
                 if (componenteIds.get(i) == null) continue;
@@ -78,7 +97,18 @@ public class ProductoService {
             producto.setCantidadItem(totalItem);
         } else {
             producto.setEsPack(false);
-            producto.setCantidadItem(1);
+            if (producto.getCantidadItem() == null || producto.getCantidadItem() < 1) {
+                producto.setCantidadItem(1);
+            }
+            if (producto.getPrecioUnitario() == null
+                    || producto.getPrecioUnitario().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new RuntimeException("El precio unitario debe ser mayor a 0");
+            }
+            if (producto.getCantidadItem() > 1
+                    && (producto.getPrecioFraccion() == null
+                        || producto.getPrecioFraccion().compareTo(BigDecimal.ZERO) <= 0)) {
+                throw new RuntimeException("Si Items por Unidad es mayor a 1, debe asignar un Precio Fraccion mayor a 0");
+            }
         }
 
         Producto guardado = productoRepository.save(producto);
@@ -90,7 +120,8 @@ public class ProductoService {
                 if (componenteIds.get(i) == null) continue;
                 ProductoComposicion pc = new ProductoComposicion();
                 pc.setProductoPack(guardado);
-                pc.setProductoComponente(new Producto(componenteIds.get(i)));
+                Producto compManaged = compMap.get(componenteIds.get(i));
+                pc.setProductoComponente(compManaged != null ? compManaged : new Producto(componenteIds.get(i)));
                 pc.setCantidad(componenteCantidades != null && i < componenteCantidades.size()
                         ? componenteCantidades.get(i) : 1);
                 composicionRepository.save(pc);
@@ -99,11 +130,8 @@ public class ProductoService {
 
         if (Boolean.TRUE.equals(producto.getEsPack())) {
             BigDecimal precioCalculado = calcularPrecioPack(guardado.getCodProducto());
-            if (precioCalculado.compareTo(BigDecimal.ZERO) > 0) {
-                guardado.setPrecioUnitario(precioCalculado);
-                guardado.setPrecioFraccion(BigDecimal.ZERO);
-                productoRepository.save(guardado);
-            }
+            guardado.setPrecioUnitario(precioCalculado);
+            productoRepository.saveAndFlush(guardado);
         }
 
         auditoriaService.registrar(usuarioActual, "Maestras", "Producto",

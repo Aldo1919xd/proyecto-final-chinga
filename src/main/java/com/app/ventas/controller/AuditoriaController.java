@@ -2,6 +2,8 @@ package com.app.ventas.controller;
 
 import com.app.ventas.entity.Auditoria;
 import com.app.ventas.repository.AuditoriaRepository;
+import com.app.ventas.service.PermisoService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,16 +18,19 @@ import java.util.List;
 public class AuditoriaController {
 
     private final AuditoriaRepository auditoriaRepository;
+    private final PermisoService permisoService;
 
-    public AuditoriaController(AuditoriaRepository auditoriaRepository) {
+    public AuditoriaController(AuditoriaRepository auditoriaRepository, PermisoService permisoService) {
         this.auditoriaRepository = auditoriaRepository;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
     public String lista(
             @RequestParam(required = false) String modulo,
             @RequestParam(required = false) String operacion,
-            Model model) {
+            Authentication auth, Model model) {
+        if (!permisoService.tieneVer(auth, "Auditoria")) return "redirect:/inicio?error=sinPermiso";
         
         List<Auditoria> registros;
         if (modulo != null && !modulo.isEmpty() && operacion != null && !operacion.isEmpty()) {

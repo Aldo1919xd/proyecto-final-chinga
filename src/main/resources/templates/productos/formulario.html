@@ -8,7 +8,7 @@
   <div class="row justify-content-center">
     <div class="col-md-10">
       <h2 th:text="${producto.codProducto != null ? 'Editar Producto' : 'Nuevo Producto'}">Formulario</h2>
-      <form th:action="@{/productos/guardar}" method="post" class="card-form">
+      <form th:action="@{/productos/guardar}" method="post" class="card-form" onsubmit="return validarForm()">
         <input type="hidden" name="codProducto" th:value="${producto.codProducto}">
         <input type="hidden" name="estado" th:value="${producto.estado != null ? producto.estado : true}">
         <input type="hidden" name="version" th:value="${producto.version}">
@@ -62,7 +62,8 @@
                     <select name="componenteId" class="form-select componente-select" required>
                       <option value="">Seleccione...</option>
                       <option th:each="cp : ${componentesDisponibles}" th:value="${cp.codProducto}"
-                              th:text="${cp.nombreProducto}"
+                              th:attr="data-precio=${cp.precioUnitario}"
+                              th:text="${cp.nombreProducto + (cp.precioUnitario != null and cp.precioUnitario.doubleValue() <= 0 ? ' (sin precio)' : '')}"
                               th:selected="${c.productoComponente.codProducto == cp.codProducto}">
                       </option>
                     </select>
@@ -71,7 +72,9 @@
                     <input type="number" name="componenteCantidad" class="form-control componente-cantidad"
                            th:value="${c.cantidad}" min="1" required>
                   </td>
-                  <td class="precio-unitario-cell" th:text="${c.productoComponente.precioUnitario}">0.00</td>
+                  <td class="precio-unitario-cell"
+                      th:classappend="${c.productoComponente.precioUnitario != null and c.productoComponente.precioUnitario.doubleValue() <= 0 ? 'text-danger' : ''}"
+                      th:text="${c.productoComponente.precioUnitario + (c.productoComponente.precioUnitario != null and c.productoComponente.precioUnitario.doubleValue() <= 0 ? ' (sin precio)' : '')}">0.00</td>
                   <td class="subtotal-cell">0.00</td>
                   <td><button type="button" class="btn btn-sm btn-outline-danger quitar-fila">&times;</button></td>
                 </tr>
@@ -84,8 +87,8 @@
               <select id="nuevoComponente" class="form-select">
                 <option value="">-- Agregar componente --</option>
                 <option th:each="cp : ${componentesDisponibles}" th:value="${cp.codProducto}"
-                        th:text="${cp.nombreProducto + ' - S/ ' + cp.precioUnitario}"
-                        th:attr="data-precio=${cp.precioUnitario}">
+                        th:attr="data-precio=${cp.precioUnitario}"
+                        th:text="${cp.nombreProducto + ' - S/ ' + cp.precioUnitario + (cp.precioUnitario != null && cp.precioUnitario.doubleValue() <= 0 ? ' (sin precio)' : '')}">
                 </option>
               </select>
             </div>
@@ -109,50 +112,62 @@
                   <td class="text-end" id="precioFinalPack">S/ 0.00</td>
                 </tr>
               </table>
+              <p id="packWarning" class="text-danger small mt-2 mb-0" style="display:none">Algunos componentes no tienen precio. Asignales precio para que el pack se calcule automaticamente.</p>
               <input type="hidden" name="precioUnitario" th:value="${producto.precioUnitario}" id="precioUnitarioHidden">
-              <input type="hidden" name="precioFraccion" th:value="${producto.precioFraccion}">
-              <input type="hidden" name="cantidadItem" th:value="${producto.cantidadItem}" id="cantidadItemHidden">
             </div>
           </div>
         </div>
 
         <div id="productoNormalSection" th:style="${producto.esPack} ? 'display:none' : ''">
-          <h6 class="section-title">Precios</h6>
+          <h6 class="section-title">Precio Unitario</h6>
           <div class="row mb-3">
             <div class="col-md-6">
               <label class="form-label">Precio Unitario (S/)</label>
               <div class="input-group">
                 <span class="input-group-text">S/</span>
                 <input type="number" step="0.01" name="precioUnitario" class="form-control"
-                       th:value="${producto.precioUnitario}" required data-val="precio">
-              </div>
-              <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Precio Fraccion (S/)</label>
-              <div class="input-group">
-                <span class="input-group-text">S/</span>
-                <input type="number" step="0.01" name="precioFraccion" class="form-control"
-                       th:value="${producto.precioFraccion}" required data-val="precio">
+                       th:value="${producto.codProducto != null ? producto.precioUnitario : ''}"
+                       placeholder="0.00" required data-val="precio" min="0.01">
               </div>
               <div class="invalid-feedback"></div>
             </div>
           </div>
+        </div>
 
-          <h6 class="section-title mt-4">Stock Inicial</h6>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label class="form-label">Unidades</label>
-              <input type="number" name="cantidadUnidad" class="form-control"
-                     th:value="${producto.cantidadUnidad}" required min="0" data-val="positivo">
-              <div class="invalid-feedback"></div>
+        <h6 class="section-title">Precio por Fraccion</h6>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Precio Fraccion (S/)</label>
+            <div class="input-group">
+              <span class="input-group-text">S/</span>
+              <input type="number" step="0.01" name="precioFraccion" class="form-control"
+                     th:value="${producto.precioFraccion}" placeholder="0.00" min="0" data-val="precio">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Fracciones</label>
-              <input type="number" name="cantidadFraccion" class="form-control"
-                     th:value="${producto.cantidadFraccion}" required min="0" data-val="positivo">
-              <div class="invalid-feedback"></div>
-            </div>
+            <div class="invalid-feedback"></div>
+            <small class="text-muted">Precio por unidad individual (ej: pastilla suelta). Dejar en 0 si no se vende por fraccion.</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Items por Unidad</label>
+            <input type="number" name="cantidadItem" id="cantidadItemInput" class="form-control"
+                   th:value="${producto.cantidadItem}" min="1" data-val="positivo">
+            <div class="invalid-feedback"></div>
+            <small class="text-muted">Solo editable si hay precio fraccion. Para packs se calcula automaticamente.</small>
+          </div>
+        </div>
+
+        <h6 class="section-title mt-4">Stock Inicial</h6>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Unidades</label>
+            <input type="number" name="cantidadUnidad" class="form-control"
+                   th:value="${producto.cantidadUnidad}" required min="0" data-val="positivo">
+            <div class="invalid-feedback"></div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Fracciones</label>
+            <input type="number" name="cantidadFraccion" class="form-control"
+                   th:value="${producto.cantidadFraccion}" required min="0" data-val="positivo">
+            <div class="invalid-feedback"></div>
           </div>
         </div>
 
@@ -166,6 +181,34 @@
 </div>
 
 <div th:replace="fragmentos :: scripts"></div>
+<script>
+function validarForm() {
+  const esPack = document.getElementById('esPack').checked;
+  if (esPack) {
+    const rows = document.querySelectorAll('#composicionBody tr');
+    if (rows.length === 0) {
+      alert('Debe agregar al menos un componente al pack.');
+      return false;
+    }
+    let sinPrecio = false;
+    rows.forEach(function(row) {
+      const select = row.querySelector('.componente-select');
+      const precio = parseFloat(select.options[select.selectedIndex]?.getAttribute('data-precio')) || 0;
+      if (precio <= 0) sinPrecio = true;
+    });
+    if (sinPrecio) {
+      return confirm('Hay componentes sin precio. El pack se guardara con precio 0.00. \u00bfContinuar de todas formas?');
+    }
+    return true;
+  }
+  const precio = parseFloat(document.querySelector('#productoNormalSection input[name="precioUnitario"]')?.value) || 0;
+  if (precio <= 0) {
+    alert('El precio unitario debe ser mayor a 0.');
+    return false;
+  }
+  return true;
+}
+</script>
 <script>
 (function() {
   const esPackCheck = document.getElementById('esPack');
@@ -182,19 +225,51 @@
     normalSection.querySelectorAll('input, select, button').forEach(function(el) {
       el.disabled = isPack;
     });
+    const cantItemInput = document.getElementById('cantidadItemInput');
+    const fraccInput = document.querySelector('input[name="precioFraccion"]');
+    if (cantItemInput) {
+      if (isPack) {
+        cantItemInput.readOnly = true;
+        cantItemInput.title = 'Se calcula automaticamente desde los componentes';
+      } else {
+        const fraccVal = parseFloat(fraccInput?.value) || 0;
+        cantItemInput.readOnly = fraccVal <= 0;
+        cantItemInput.title = cantItemInput.readOnly
+          ? 'Primero asigna un precio fraccion para habilitarlo'
+          : '';
+      }
+    }
     if (!isPack) {
       document.getElementById('composicionBody').innerHTML = '';
       recalcular();
+      if (cantItemInput) {
+        cantItemInput.value = cantItemInput.defaultValue || 1;
+      }
     }
   }
 
   esPackCheck.addEventListener('change', togglePackSections);
+
+  const fraccInput = document.querySelector('input[name="precioFraccion"]');
+  if (fraccInput) {
+    fraccInput.addEventListener('input', function() {
+      if (!esPackCheck.checked) {
+        const cantItemInput = document.getElementById('cantidadItemInput');
+        const val = parseFloat(this.value) || 0;
+        if (cantItemInput) {
+          cantItemInput.readOnly = val <= 0;
+          cantItemInput.title = cantItemInput.readOnly ? 'Primero asigna un precio fraccion para habilitarlo' : '';
+        }
+      }
+    });
+  }
 
   function recalcular() {
     const rows = document.querySelectorAll('#composicionBody tr');
     let subtotal = 0;
     let totalItem = 0;
 
+    let sinPrecio = false;
     rows.forEach(function(row) {
       const select = row.querySelector('.componente-select');
       const cantidad = parseInt(row.querySelector('.componente-cantidad').value) || 0;
@@ -203,13 +278,32 @@
       subtotal += sub;
       totalItem += cantidad;
       row.querySelector('.subtotal-cell').textContent = sub.toFixed(2);
+
+      const precioCell = row.querySelector('.precio-unitario-cell');
+      if (precio <= 0) {
+        row.classList.add('sin-precio-row');
+        precioCell.classList.add('text-danger');
+        if (!precioCell.textContent.includes('(sin precio)')) {
+          precioCell.textContent = precio.toFixed(2) + ' (sin precio)';
+        }
+        sinPrecio = true;
+      } else {
+        row.classList.remove('sin-precio-row');
+        precioCell.classList.remove('text-danger');
+        precioCell.textContent = precio.toFixed(2);
+      }
     });
 
     document.getElementById('subtotalComps').textContent = 'S/ ' + subtotal.toFixed(2);
-    document.getElementById('cantidadItemHidden').value = totalItem;
+    document.getElementById('cantidadItemInput').value = totalItem;
 
     document.getElementById('precioFinalPack').textContent = 'S/ ' + subtotal.toFixed(2);
     document.getElementById('precioUnitarioHidden').value = subtotal.toFixed(2);
+
+    const warning = document.getElementById('packWarning');
+    if (warning) {
+      warning.style.display = sinPrecio ? '' : 'none';
+    }
   }
 
   document.getElementById('agregarComponente').addEventListener('click', function() {
@@ -225,30 +319,35 @@
 
     if (cant < 1) return;
 
-    const exists = Array.from(document.querySelectorAll('#composicionBody select[name="componenteId"]'))
-      .some(s => s.value === prodId);
-    if (exists) {
-      alert('El producto ya esta en la composicion');
-      return;
-    }
+      const exists = Array.from(document.querySelectorAll('#composicionBody select[name="componenteId"]'))
+        .some(s => s.value === prodId);
+      if (exists) {
+        alert('El producto ya esta en la composicion');
+        return;
+      }
 
-    const tbody = document.getElementById('composicionBody');
-    const tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td>' +
-      '<select name="componenteId" class="form-select componente-select" required>' +
-      '<option value="">Seleccione...</option>' +
-      Array.from(select.options).slice(1).map(function(o) {
-        return '<option value="' + o.value + '"' + (o.value === prodId ? ' selected' : '') + '>' + o.text.split(' - ')[0] + '</option>';
-      }).join('') +
-      '</select>' +
-      '</td>' +
-      '<td><input type="number" name="componenteCantidad" class="form-control componente-cantidad" value="' + cant + '" min="1" required></td>' +
-      '<td class="precio-unitario-cell">' + precio.toFixed(2) + '</td>' +
-      '<td class="subtotal-cell">' + (precio * cant).toFixed(2) + '</td>' +
-      '<td><button type="button" class="btn btn-sm btn-outline-danger quitar-fila">&times;</button></td>';
+      const hasPrice = precio > 0;
+      const warningText = hasPrice ? '' : ' (sin precio)';
 
-    tbody.appendChild(tr);
+      const tbody = document.getElementById('composicionBody');
+      const tr = document.createElement('tr');
+      tr.className = hasPrice ? '' : 'sin-precio-row';
+      tr.innerHTML =
+        '<td>' +
+        '<select name="componenteId" class="form-select componente-select" required>' +
+        '<option value="">Seleccione...</option>' +
+        Array.from(select.options).slice(1).map(function(o) {
+          var p = o.getAttribute('data-precio') || '0';
+          return '<option value="' + o.value + '" data-precio="' + p + '"' + (o.value === prodId ? ' selected' : '') + '>' + o.text.split(' - ')[0] + '</option>';
+        }).join('') +
+        '</select>' +
+        '</td>' +
+        '<td><input type="number" name="componenteCantidad" class="form-control componente-cantidad" value="' + cant + '" min="1" required></td>' +
+        '<td class="precio-unitario-cell' + (hasPrice ? '' : ' text-danger') + '">' + precio.toFixed(2) + warningText + '</td>' +
+        '<td class="subtotal-cell">' + (precio * cant).toFixed(2) + '</td>' +
+        '<td><button type="button" class="btn btn-sm btn-outline-danger quitar-fila">&times;</button></td>';
+
+      tbody.appendChild(tr);
     cantidad.value = '1';
     select.selectedIndex = 0;
     bindRowEvents(tr);

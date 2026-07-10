@@ -193,7 +193,8 @@ function actualizarStockDisplay(row) {
         if (tipo === 'UNIDAD') {
           stockSpan.textContent = prod.cantidadUnidad + ' und';
         } else {
-          var totalFracc = prod.cantidadFraccion + (prod.cantidadUnidad > 0 ? (prod.cantidadUnidad - 1) * 10 : 0);
+          var items = prod.cantidadItem || 1;
+          var totalFracc = prod.cantidadFraccion + (prod.cantidadUnidad > 0 ? (prod.cantidadUnidad - 1) * items : 0);
           stockSpan.textContent = totalFracc + ' fracc';
         }
       }

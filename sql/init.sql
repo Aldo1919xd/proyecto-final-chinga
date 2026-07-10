@@ -228,16 +228,21 @@ INSERT INTO TipoDocumento (codTipoDocumento, descripcion, estado) VALUES
 (4, 'Pasaporte', TRUE);
 
 INSERT INTO Funcionalidad (idFuncionalidad, nombre) VALUES
-(1, 'Dashboard'),
-(2, 'Usuarios'),
-(3, 'Roles'),
-(4, 'Clientes'),
-(5, 'Categorias'),
-(6, 'Productos'),
-(7, 'Ingresos'),
-(8, 'Ventas'),
-(9, 'Kardex'),
-(10, 'Auditoria');
+(1,  'Dashboard'),
+(2,  'Usuarios'),
+(3,  'Roles'),
+(4,  'Clientes'),
+(5,  'Categorias'),
+(6,  'Productos'),
+(7,  'Ingresos'),
+(8,  'Ventas'),
+(9,  'Kardex'),
+(10, 'Auditoria'),
+(11, 'Seguridad'),
+(12, 'Maestras');
+
+UPDATE Funcionalidad SET padre = 11 WHERE idFuncionalidad IN (2, 3);
+UPDATE Funcionalidad SET padre = 12 WHERE idFuncionalidad IN (4, 5, 6);
 
 INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
 (1, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
@@ -249,21 +254,25 @@ INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, elimin
 (1, 7,  TRUE, TRUE,  TRUE,  TRUE,  FALSE),
 (1, 8,  TRUE, TRUE,  TRUE,  TRUE,  TRUE),
 (1, 9,  TRUE, FALSE, FALSE, FALSE, TRUE),
-(1, 10, TRUE, FALSE, FALSE, FALSE, FALSE);
+(1, 10, TRUE, FALSE, FALSE, FALSE, FALSE),
+(1, 11, TRUE, FALSE, FALSE, FALSE, FALSE),
+(1, 12, TRUE, FALSE, FALSE, FALSE, FALSE);
 
 INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
 (2, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
 (2, 4,  TRUE, TRUE,  TRUE,  FALSE, FALSE),
 (2, 6,  TRUE, FALSE, FALSE, FALSE, TRUE),
 (2, 8,  TRUE, TRUE,  FALSE, FALSE, TRUE),
-(2, 9,  TRUE, FALSE, FALSE, FALSE, FALSE);
+(2, 9,  TRUE, FALSE, FALSE, FALSE, FALSE),
+(2, 12, TRUE, FALSE, FALSE, FALSE, FALSE);
 
 INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
 (3, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),
 (3, 5,  TRUE, TRUE,  TRUE,  FALSE, FALSE),
 (3, 6,  TRUE, TRUE,  TRUE,  FALSE, TRUE),
 (3, 7,  TRUE, TRUE,  TRUE,  FALSE, FALSE),
-(3, 9,  TRUE, FALSE, FALSE, FALSE, TRUE);
+(3, 9,  TRUE, FALSE, FALSE, FALSE, TRUE),
+(3, 12, TRUE, FALSE, FALSE, FALSE, FALSE);
 
 INSERT INTO RolFuncionalidad (idRol, idFuncionalidad, ver, crear, editar, eliminar, imprimir) VALUES
 (4, 1,  TRUE, FALSE, FALSE, FALSE, FALSE),

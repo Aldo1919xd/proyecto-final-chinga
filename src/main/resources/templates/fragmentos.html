@@ -29,8 +29,8 @@
             Seguridad
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/usuarios">Usuarios</a></li>
-            <li><a class="dropdown-item" href="/roles">Roles</a></li>
+            <li th:if="${permisosMap.containsKey('Usuarios') and permisosMap.get('Usuarios').ver}"><a class="dropdown-item" href="/usuarios">Usuarios</a></li>
+            <li th:if="${permisosMap.containsKey('Roles') and permisosMap.get('Roles').ver}"><a class="dropdown-item" href="/roles">Roles</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="/usuarios/cambiar-password">Cambiar Password</a></li>
             <li><hr class="dropdown-divider"></li>
@@ -42,15 +42,15 @@
             Maestras
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="/clientes">Clientes</a></li>
-            <li><a class="dropdown-item" href="/categorias">Categorias</a></li>
-            <li><a class="dropdown-item" href="/productos">Productos</a></li>
+            <li th:if="${permisosMap.containsKey('Clientes') and permisosMap.get('Clientes').ver}"><a class="dropdown-item" href="/clientes">Clientes</a></li>
+            <li th:if="${permisosMap.containsKey('Categorias') and permisosMap.get('Categorias').ver}"><a class="dropdown-item" href="/categorias">Categorias</a></li>
+            <li th:if="${permisosMap.containsKey('Productos') and permisosMap.get('Productos').ver}"><a class="dropdown-item" href="/productos">Productos</a></li>
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="/ingresos">Ingresos</a></li>
-        <li class="nav-item"><a class="nav-link" href="/ventas">Ventas</a></li>
-        <li class="nav-item"><a class="nav-link" href="/kardex">Kardex</a></li>
-        <li class="nav-item"><a class="nav-link" href="/auditoria">Auditoría</a></li>
+        <li class="nav-item" th:if="${permisosMap.containsKey('Ingresos') and permisosMap.get('Ingresos').ver}"><a class="nav-link" href="/ingresos">Ingresos</a></li>
+        <li class="nav-item" th:if="${permisosMap.containsKey('Ventas') and permisosMap.get('Ventas').ver}"><a class="nav-link" href="/ventas">Ventas</a></li>
+        <li class="nav-item" th:if="${permisosMap.containsKey('Kardex') and permisosMap.get('Kardex').ver}"><a class="nav-link" href="/kardex">Kardex</a></li>
+        <li class="nav-item" th:if="${permisosMap.containsKey('Auditoria') and permisosMap.get('Auditoria').ver}"><a class="nav-link" href="/auditoria">Auditoría</a></li>
       </ul>
       <form class="d-flex" th:action="@{/logout}" method="post">
         <button class="btn btn-outline-primary btn-sm" type="submit">Cerrar Sesion</button>

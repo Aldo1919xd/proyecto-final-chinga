@@ -7,7 +7,7 @@
 <div class="container content">
   <div class="page-header">
     <h2>Categorias</h2>
-    <a href="/categorias/nuevo" class="btn btn-primary">Nueva Categoria</a>
+    <a th:if="${permisosMap.containsKey('Categorias') and permisosMap.get('Categorias').crear}" href="/categorias/nuevo" class="btn btn-primary">Nueva Categoria</a>
   </div>
   <div class="table-wrapper">
     <table class="table table-bordered table-hover">
@@ -28,8 +28,8 @@
             <span th:unless="${c.estado}" class="badge bg-danger">Inactivo</span>
           </td>
           <td>
-            <a th:href="@{/categorias/editar/{id}(id=${c.codCategoria})}" class="btn btn-sm btn-outline-primary">Editar</a>
-            <a th:href="@{/categorias/eliminar/{id}(id=${c.codCategoria})}" class="btn btn-sm btn-outline-danger"
+            <a th:if="${permisosMap.containsKey('Categorias') and permisosMap.get('Categorias').editar}" th:href="@{/categorias/editar/{id}(id=${c.codCategoria})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:if="${permisosMap.containsKey('Categorias') and permisosMap.get('Categorias').eliminar}" th:href="@{/categorias/eliminar/{id}(id=${c.codCategoria})}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('Eliminar esta categoria?')">Eliminar</a>
           </td>
         </tr>

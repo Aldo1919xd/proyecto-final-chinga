@@ -82,16 +82,23 @@ public class DataInitializer implements CommandLineRunner {
             dashboard.setNombre("Dashboard");
             funcionalidadRepository.save(dashboard);
 
+            Funcionalidad maestras = new Funcionalidad();
+            maestras.setNombre("Maestras");
+            maestras = funcionalidadRepository.save(maestras);
+
             Funcionalidad clientes = new Funcionalidad();
             clientes.setNombre("Clientes");
+            clientes.setPadre(maestras);
             funcionalidadRepository.save(clientes);
 
             Funcionalidad categorias = new Funcionalidad();
             categorias.setNombre("Categorias");
+            categorias.setPadre(maestras);
             funcionalidadRepository.save(categorias);
 
             Funcionalidad productos = new Funcionalidad();
             productos.setNombre("Productos");
+            productos.setPadre(maestras);
             funcionalidadRepository.save(productos);
 
             Funcionalidad ingresos = new Funcionalidad();
@@ -133,6 +140,8 @@ public class DataInitializer implements CommandLineRunner {
             funcionalidadRepository.save(anularVenta);
         }
 
+        migrarJerarquiaMaestras();
+
         if (rolFuncionalidadRepository.count() == 0) {
             var roles = rolRepository.findAll();
             var funcionalidades = funcionalidadRepository.findAll();
@@ -149,7 +158,8 @@ public class DataInitializer implements CommandLineRunner {
                         rf.setEditar(true);
                         rf.setEliminar(true);
                         if (f.getNombre().equals("Dashboard") || f.getNombre().equals("Kardex")
-                                || f.getNombre().equals("Auditoria") || f.getNombre().equals("Seguridad")) {
+                                || f.getNombre().equals("Auditoria") || f.getNombre().equals("Seguridad")
+                                || f.getNombre().equals("Maestras")) {
                             rf.setEliminar(false);
                             rf.setEditar(false);
                             rf.setCrear(false);
@@ -196,6 +206,7 @@ public class DataInitializer implements CommandLineRunner {
                     } else if (r.getIdRol() == 4) {
                         if (f.getNombre().equals("Seguridad") || f.getNombre().equals("Usuarios")
                                 || f.getNombre().equals("Roles")
+                                || f.getNombre().equals("Maestras")
                                 || f.getNombre().equals("Clientes") || f.getNombre().equals("Categorias")
                                 || f.getNombre().equals("Productos") || f.getNombre().equals("Ingresos")
                                 || f.getNombre().equals("Registrar Venta") || f.getNombre().equals("Anular Venta")) {
@@ -218,6 +229,31 @@ public class DataInitializer implements CommandLineRunner {
             admin.setRol(superRol);
             admin.setEstado(true);
             usuarioRepository.save(admin);
+        }
+    }
+
+    private void migrarJerarquiaMaestras() {
+        if (funcionalidadRepository.findByNombre("Maestras").isPresent()) return;
+
+        Funcionalidad maestrasEntity = new Funcionalidad();
+        maestrasEntity.setNombre("Maestras");
+        final Funcionalidad maestras = funcionalidadRepository.save(maestrasEntity);
+
+        for (String nombre : new String[]{"Clientes", "Categorias", "Productos"}) {
+            funcionalidadRepository.findByNombre(nombre).ifPresent(f -> {
+                f.setPadre(maestras);
+                funcionalidadRepository.save(f);
+            });
+        }
+
+        for (Rol r : rolRepository.findAll()) {
+            RolFuncionalidad rf = new RolFuncionalidad();
+            rf.setRol(r);
+            rf.setFuncionalidad(maestras);
+            rf.setVer(r.getNombreRol().equals("Superusuario")
+                    || r.getNombreRol().equals("Vendedor")
+                    || r.getNombreRol().equals("Almacen"));
+            rolFuncionalidadRepository.save(rf);
         }
     }
 }

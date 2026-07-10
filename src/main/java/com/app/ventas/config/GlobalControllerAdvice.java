@@ -9,7 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
@@ -23,16 +24,20 @@ public class GlobalControllerAdvice {
         this.rolFuncionalidadRepository = rolFuncionalidadRepository;
     }
 
-    @ModelAttribute("menuDinamico")
-    public List<RolFuncionalidad> inyectarMenuDinamico() {
+    @ModelAttribute("permisosMap")
+    public Map<String, RolFuncionalidad> inyectarPermisosMap() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
             Usuario usuario = usuarioService.buscarPorUsuario(auth.getName()).orElse(null);
             if (usuario != null) {
-                List<RolFuncionalidad> todos = rolFuncionalidadRepository.findByRolIdRol(usuario.getRol().getIdRol());
-                return todos.stream().filter(RolFuncionalidad::getVer).collect(Collectors.toList());
+                return rolFuncionalidadRepository.findByRolIdRol(usuario.getRol().getIdRol())
+                        .stream()
+                        .collect(Collectors.toMap(
+                                rf -> rf.getFuncionalidad().getNombre(),
+                                rf -> rf
+                        ));
             }
         }
-        return null;
+        return Collections.emptyMap();
     }
 }

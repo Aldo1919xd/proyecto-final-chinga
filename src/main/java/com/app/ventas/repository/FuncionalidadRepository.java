@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface FuncionalidadRepository extends JpaRepository<Funcionalidad, Integer> {
     List<Funcionalidad> findByPadreIsNullOrderByNombreAsc();
+    java.util.Optional<Funcionalidad> findByNombre(String nombre);
 }

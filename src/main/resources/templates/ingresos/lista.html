@@ -7,7 +7,7 @@
 <div class="container content">
   <div class="page-header">
     <h2>Ingresos</h2>
-    <a href="/ingresos/nuevo" class="btn btn-primary">Nuevo Ingreso</a>
+    <a th:if="${permisosMap.containsKey('Ingresos') and permisosMap.get('Ingresos').crear}" href="/ingresos/nuevo" class="btn btn-primary">Nuevo Ingreso</a>
   </div>
   <div class="table-wrapper table-responsive-stack">
     <table class="table table-bordered table-hover">

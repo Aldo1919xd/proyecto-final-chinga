@@ -2,7 +2,9 @@ package com.app.ventas.controller;
 
 import com.app.ventas.entity.Kardex;
 import com.app.ventas.repository.KardexRepository;
+import com.app.ventas.service.PermisoService;
 import com.app.ventas.service.ProductoService;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,14 +19,18 @@ public class KardexController {
 
     private final KardexRepository kardexRepository;
     private final ProductoService productoService;
+    private final PermisoService permisoService;
 
-    public KardexController(KardexRepository kardexRepository, ProductoService productoService) {
+    public KardexController(KardexRepository kardexRepository, ProductoService productoService,
+                            PermisoService permisoService) {
         this.kardexRepository = kardexRepository;
         this.productoService = productoService;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
-    public String resumen(@RequestParam(required = false) Integer productoId, Model model) {
+    public String resumen(@RequestParam(required = false) Integer productoId, Authentication auth, Model model) {
+        if (!permisoService.tieneVer(auth, "Kardex")) return "redirect:/inicio?error=sinPermiso";
         model.addAttribute("productos", productoService.listarActivos());
         if (productoId != null) {
             List<Kardex> movimientos = kardexRepository.findByProductoCodProductoOrderByFechaHoraDesc(productoId);

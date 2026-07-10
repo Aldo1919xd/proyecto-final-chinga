@@ -9,7 +9,7 @@
   <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">Error</div>
   <div class="page-header">
     <h2>Productos</h2>
-    <a href="/productos/nuevo" class="btn btn-primary">Nuevo Producto</a>
+    <a th:if="${permisosMap.containsKey('Productos') and permisosMap.get('Productos').crear}" href="/productos/nuevo" class="btn btn-primary">Nuevo Producto</a>
   </div>
   <div class="table-wrapper table-responsive-stack">
     <table class="table table-bordered table-hover">
@@ -42,8 +42,8 @@
             <span th:unless="${p.estado}" class="badge bg-danger">Inactivo</span>
           </td>
           <td data-label="Acciones">
-            <a th:href="@{/productos/editar/{id}(id=${p.codProducto})}" class="btn btn-sm btn-outline-primary">Editar</a>
-            <a th:href="@{/productos/eliminar/{id}(id=${p.codProducto})}" class="btn btn-sm btn-outline-danger"
+            <a th:if="${permisosMap.containsKey('Productos') and permisosMap.get('Productos').editar}" th:href="@{/productos/editar/{id}(id=${p.codProducto})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:if="${permisosMap.containsKey('Productos') and permisosMap.get('Productos').eliminar}" th:href="@{/productos/eliminar/{id}(id=${p.codProducto})}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('Eliminar este producto?')">Eliminar</a>
             <button th:if="${p.esPack}" type="button" class="btn btn-sm btn-outline-info btn-menudear"
                     th:data-id="${p.codProducto}" th:data-nombre="${p.nombreProducto}">Menudear</button>

@@ -5,9 +5,11 @@
 <div th:replace="fragmentos :: navbar"></div>
 
 <div class="container content">
+  <div th:if="${param.exitoAnulado}" class="alert alert-success">Venta anulada correctamente</div>
+  <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">Error</div>
   <div class="page-header">
     <h2>Ventas</h2>
-    <a href="/ventas/nuevo" class="btn btn-primary">Nueva Venta</a>
+    <a th:if="${permisosMap.containsKey('Ventas') and permisosMap.get('Ventas').crear}" href="/ventas/nuevo" class="btn btn-primary">Nueva Venta</a>
   </div>
   <div class="table-wrapper">
     <table class="table table-bordered table-hover">
@@ -22,6 +24,7 @@
           <th>Fecha</th>
           <th>Usuario</th>
           <th>Estado</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -37,6 +40,11 @@
           <td>
             <span th:if="${v.estado}" class="badge bg-success">Activo</span>
             <span th:unless="${v.estado}" class="badge bg-danger">Anulado</span>
+          </td>
+          <td>
+            <form th:if="${v.estado and permisosMap.containsKey('Anular Venta') and permisosMap.get('Anular Venta').ver}" th:action="@{/ventas/anular/{id}(id=${v.codVenta})}" method="post" style="display:inline" onsubmit="return confirm('¿Está seguro de anular esta venta? Se restaurará el stock.')">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Anular</button>
+            </form>
           </td>
         </tr>
       </tbody>

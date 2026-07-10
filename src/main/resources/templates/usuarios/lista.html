@@ -9,7 +9,7 @@
     <h2>Usuarios</h2>
     <div class="d-flex gap-2">
       <a href="/usuarios/2fa/estado" class="btn btn-outline-info">Mi 2FA</a>
-      <a href="/usuarios/nuevo" class="btn btn-primary">Nuevo Usuario</a>
+      <a th:if="${permisosMap.containsKey('Usuarios') and permisosMap.get('Usuarios').crear}" href="/usuarios/nuevo" class="btn btn-primary">Nuevo Usuario</a>
     </div>
   </div>
   <div class="table-wrapper">
@@ -38,8 +38,8 @@
             <span th:unless="${u.estado}" class="badge bg-danger">Inactivo</span>
           </td>
           <td>
-            <a th:href="@{/usuarios/editar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-primary">Editar</a>
-            <a th:href="@{/usuarios/eliminar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-danger"
+            <a th:if="${permisosMap.containsKey('Usuarios') and permisosMap.get('Usuarios').editar}" th:href="@{/usuarios/editar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:if="${permisosMap.containsKey('Usuarios') and permisosMap.get('Usuarios').eliminar}" th:href="@{/usuarios/eliminar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('Eliminar este usuario?')">Eliminar</a>
           </td>
         </tr>

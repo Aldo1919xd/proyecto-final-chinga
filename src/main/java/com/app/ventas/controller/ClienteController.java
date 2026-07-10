@@ -4,6 +4,7 @@ import com.app.ventas.entity.Cliente;
 import com.app.ventas.entity.TipoDocumento;
 import com.app.ventas.entity.Usuario;
 import com.app.ventas.service.ClienteService;
+import com.app.ventas.service.PermisoService;
 import com.app.ventas.service.TipoDocumentoService;
 import com.app.ventas.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,22 +23,26 @@ public class ClienteController {
     private final ClienteService clienteService;
     private final TipoDocumentoService tipoDocumentoService;
     private final UsuarioService usuarioService;
+    private final PermisoService permisoService;
 
     public ClienteController(ClienteService clienteService, TipoDocumentoService tipoDocumentoService,
-                             UsuarioService usuarioService) {
+                             UsuarioService usuarioService, PermisoService permisoService) {
         this.clienteService = clienteService;
         this.tipoDocumentoService = tipoDocumentoService;
         this.usuarioService = usuarioService;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Authentication auth, Model model) {
+        if (!permisoService.tieneVer(auth, "Clientes")) return "redirect:/inicio?error=sinPermiso";
         model.addAttribute("clientes", clienteService.listarActivos());
         return "clientes/lista";
     }
 
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
+    public String nuevo(Authentication auth, Model model) {
+        if (!permisoService.tieneCrear(auth, "Clientes")) return "redirect:/clientes?error=sinPermiso";
         model.addAttribute("cliente", new Cliente());
         model.addAttribute("tiposDocumento", tipoDocumentoService.listarActivos());
         return "clientes/formulario";
@@ -46,6 +51,9 @@ public class ClienteController {
     @PostMapping("/guardar")
     public String guardar(@Valid Cliente cliente, BindingResult result, Model model,
                           Authentication auth, HttpServletRequest request) {
+        boolean esNuevo = cliente.getCodCliente() == null;
+        if (esNuevo && !permisoService.tieneCrear(auth, "Clientes")) return "redirect:/clientes?error=sinPermiso";
+        if (!esNuevo && !permisoService.tieneEditar(auth, "Clientes")) return "redirect:/clientes?error=sinPermiso";
         if (cliente.getNombreCliente() == null || cliente.getNombreCliente().isBlank()) {
             if (cliente.getRazonSocial() == null || cliente.getRazonSocial().isBlank()) {
                 result.rejectValue("nombreCliente", "error.cliente",
@@ -91,7 +99,8 @@ public class ClienteController {
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable Integer id, Model model) {
+    public String editar(@PathVariable Integer id, Authentication auth, Model model) {
+        if (!permisoService.tieneEditar(auth, "Clientes")) return "redirect:/clientes?error=sinPermiso";
         model.addAttribute("cliente", clienteService.buscarPorId(id).orElseThrow());
         model.addAttribute("tiposDocumento", tipoDocumentoService.listarActivos());
         return "clientes/formulario";
@@ -99,6 +108,7 @@ public class ClienteController {
 
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Integer id, Authentication auth, HttpServletRequest request) {
+        if (!permisoService.tieneEliminar(auth, "Clientes")) return "redirect:/clientes?error=sinPermiso";
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
         clienteService.eliminarLogico(id, actual, request);
         return "redirect:/clientes";

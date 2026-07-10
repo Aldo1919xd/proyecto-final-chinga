@@ -7,7 +7,7 @@
 <div class="container content">
   <div class="page-header">
     <h2>Roles</h2>
-    <a href="/roles/nuevo" class="btn btn-primary">Nuevo Rol</a>
+    <a th:if="${permisosMap.containsKey('Roles') and permisosMap.get('Roles').crear}" href="/roles/nuevo" class="btn btn-primary">Nuevo Rol</a>
   </div>
   <div class="table-wrapper">
     <table class="table table-bordered table-hover">
@@ -28,9 +28,9 @@
             <span th:unless="${rol.estado}" class="badge bg-danger">Inactivo</span>
           </td>
           <td>
-            <a th:href="@{/roles/editar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-primary">Editar</a>
-            <a th:href="@{/roles/permisos/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-info">Permisos</a>
-            <a th:if="${rol.idRol != 1}" th:href="@{/roles/eliminar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-danger"
+            <a th:if="${permisosMap.containsKey('Roles') and permisosMap.get('Roles').editar}" th:href="@{/roles/editar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-primary">Editar</a>
+            <a th:if="${permisosMap.containsKey('Roles') and permisosMap.get('Roles').ver}" th:href="@{/roles/permisos/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-info">Permisos</a>
+            <a th:if="${rol.idRol != 1 and permisosMap.containsKey('Roles') and permisosMap.get('Roles').eliminar}" th:href="@{/roles/eliminar/{id}(id=${rol.idRol})}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('Eliminar este rol?')">Eliminar</a>
           </td>
         </tr>

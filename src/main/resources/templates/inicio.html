@@ -5,6 +5,10 @@
 <div th:replace="fragmentos :: navbar"></div>
 
 <div class="container content">
+  <div th:if="${param.error == 'sinPermiso'}" class="alert alert-warning alert-dismissible fade show">
+    No tienes permisos para acceder a esa seccion.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
   <div class="row mb-5">
     <div class="col-12 text-center">
       <h1 class="mb-2">Bienvenido</h1>
@@ -12,7 +16,7 @@
     </div>
   </div>
   <div class="row g-4">
-    <div class="col-md-3">
+    <div th:if="${permisosMap.containsKey('Usuarios') and permisosMap.get('Usuarios').ver}" class="col-md-3">
       <a href="/usuarios" class="dashboard-card">
         <div class="card-icon" style="background-color: var(--rp-iris);">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -26,7 +30,7 @@
         <p>Gestion de usuarios del sistema</p>
       </a>
     </div>
-    <div class="col-md-3">
+    <div th:if="${permisosMap.containsKey('Clientes') and permisosMap.get('Clientes').ver}" class="col-md-3">
       <a href="/clientes" class="dashboard-card">
         <div class="card-icon" style="background-color: var(--rp-pine);">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -38,7 +42,7 @@
         <p>Registro de clientes</p>
       </a>
     </div>
-    <div class="col-md-3">
+    <div th:if="${permisosMap.containsKey('Productos') and permisosMap.get('Productos').ver}" class="col-md-3">
       <a href="/productos" class="dashboard-card">
         <div class="card-icon" style="background-color: var(--rp-gold);">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -51,8 +55,8 @@
         <p>Inventario de productos</p>
       </a>
     </div>
-    <div class="col-md-3">
-      <a href="/ventas/nuevo" class="dashboard-card">
+    <div th:if="${permisosMap.containsKey('Ventas') and permisosMap.get('Ventas').ver}" class="col-md-3">
+      <a href="/ventas" class="dashboard-card">
         <div class="card-icon" style="background-color: var(--rp-love);">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>

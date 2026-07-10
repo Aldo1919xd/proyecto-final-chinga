@@ -4,6 +4,7 @@ import com.app.ventas.entity.Usuario;
 import com.app.ventas.entity.VentaCabecera;
 import com.app.ventas.entity.VentaDetalle;
 import com.app.ventas.service.ClienteService;
+import com.app.ventas.service.PermisoService;
 import com.app.ventas.service.ProductoService;
 import com.app.ventas.service.UsuarioService;
 import com.app.ventas.service.VentaService;
@@ -25,23 +26,28 @@ public class VentaController {
     private final ClienteService clienteService;
     private final ProductoService productoService;
     private final UsuarioService usuarioService;
+    private final PermisoService permisoService;
 
     public VentaController(VentaService ventaService, ClienteService clienteService,
-                           ProductoService productoService, UsuarioService usuarioService) {
+                           ProductoService productoService, UsuarioService usuarioService,
+                           PermisoService permisoService) {
         this.ventaService = ventaService;
         this.clienteService = clienteService;
         this.productoService = productoService;
         this.usuarioService = usuarioService;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Authentication auth, Model model) {
+        if (!permisoService.tieneVer(auth, "Ventas")) return "redirect:/inicio?error=sinPermiso";
         model.addAttribute("ventas", ventaService.listarTodas());
         return "ventas/lista";
     }
 
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
+    public String nuevo(Authentication auth, Model model) {
+        if (!permisoService.tieneCrear(auth, "Ventas")) return "redirect:/ventas?error=sinPermiso";
         model.addAttribute("venta", new VentaCabecera());
         model.addAttribute("clientes", clienteService.listarActivos());
         model.addAttribute("productos", productoService.listarActivos());
@@ -107,5 +113,17 @@ public class VentaController {
             return "redirect:/ventas/nuevo?error=" + e.getMessage();
         }
         return "redirect:/ventas/nuevo?exito";
+    }
+
+    @PostMapping("/anular/{id}")
+    public String anular(@PathVariable Integer id, Authentication auth, HttpServletRequest request) {
+        if (!permisoService.tieneEliminar(auth, "Anular Venta")) return "redirect:/ventas?error=sinPermiso";
+        Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
+        try {
+            ventaService.anularVenta(id, actual, request);
+        } catch (Exception e) {
+            return "redirect:/ventas?error=" + e.getMessage();
+        }
+        return "redirect:/ventas?exitoAnulado";
     }
 }

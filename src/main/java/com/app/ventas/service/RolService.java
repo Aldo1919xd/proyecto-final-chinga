@@ -124,6 +124,7 @@ public class RolService {
         List<Funcionalidad> todas = funcionalidadRepository.findAll();
 
         rolFuncionalidadRepository.deleteByRolIdRol(idRol);
+        rolFuncionalidadRepository.flush();
 
         for (Funcionalidad func : todas) {
             Integer fid = func.getIdFuncionalidad();

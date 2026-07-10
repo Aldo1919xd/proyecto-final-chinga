@@ -85,22 +85,31 @@ public class VentaService {
             BigDecimal precio = detalle.getTipoVenta().equals("FRACCION")
                     ? producto.getPrecioFraccion()
                     : producto.getPrecioUnitario();
+            if (detalle.getTipoVenta().equals("FRACCION")
+                    && (precio == null || precio.compareTo(BigDecimal.ZERO) <= 0)) {
+                throw new RuntimeException("El producto \"" + producto.getNombreProducto()
+                        + "\" no tiene precio de fraccion configurado");
+            }
             detalle.setPrecioUnitario(precio);
             detalle.setSubtotal(precio.multiply(BigDecimal.valueOf(detalle.getCantidad())));
             subtotalTotal = subtotalTotal.add(detalle.getSubtotal());
 
+            int fraccPorUnidad = 1;
+            if (producto.getCantidadItem() != null && producto.getCantidadItem() > 0) {
+                fraccPorUnidad = producto.getCantidadItem();
+            }
             int unidadesConvertidas = 0;
             String docNro = tipoComprobante + "-" + serie + "-" + correlativo.getNumeroActual();
 
             if (detalle.getTipoVenta().equals("FRACCION")) {
                 int needed = detalle.getCantidad();
-                int available = producto.getCantidadFraccion() + producto.getCantidadUnidad() * 10;
+                int available = producto.getCantidadFraccion() + producto.getCantidadUnidad() * fraccPorUnidad;
                 if (available < needed) {
                     throw new RuntimeException("Stock insuficiente para " + producto.getNombreProducto());
                 }
                 while (producto.getCantidadFraccion() < needed && producto.getCantidadUnidad() > 0) {
                     producto.setCantidadUnidad(producto.getCantidadUnidad() - 1);
-                    producto.setCantidadFraccion(producto.getCantidadFraccion() + 10);
+                    producto.setCantidadFraccion(producto.getCantidadFraccion() + fraccPorUnidad);
                     unidadesConvertidas++;
                 }
                 producto.setCantidadFraccion(producto.getCantidadFraccion() - needed);
@@ -134,8 +143,8 @@ public class VentaService {
                 kEntradaF.setProducto(producto);
                 kEntradaF.setTipoOperacion(new TipoOperacion(5)); // Menudeo
                 kEntradaF.setCantidadInicial(stockFraccAntes);
-                kEntradaF.setCantidadMovimiento(unidadesConvertidas * 10);
-                kEntradaF.setCantidadFinal(stockFraccAntes + (unidadesConvertidas * 10));
+                kEntradaF.setCantidadMovimiento(unidadesConvertidas * fraccPorUnidad);
+                kEntradaF.setCantidadFinal(stockFraccAntes + (unidadesConvertidas * fraccPorUnidad));
                 kEntradaF.setSaldoUnitario(stockUndAntes - unidadesConvertidas);
                 kEntradaF.setSaldoFraccionario(stockFraccAntes + (unidadesConvertidas * 10));
                 kEntradaF.setCodDocumento(docNro);
@@ -149,7 +158,7 @@ public class VentaService {
             kardex.setProducto(producto);
             kardex.setTipoOperacion(new TipoOperacion(2)); // Venta
             if (detalle.getTipoVenta().equals("FRACCION")) {
-                int inicialF = stockFraccAntes + (unidadesConvertidas * 10);
+                int inicialF = stockFraccAntes + (unidadesConvertidas * fraccPorUnidad);
                 kardex.setCantidadInicial(inicialF);
                 kardex.setCantidadMovimiento(detalle.getCantidad());
                 kardex.setCantidadFinal(inicialF - detalle.getCantidad());
@@ -189,5 +198,56 @@ public class VentaService {
                         + correlativo.getNumeroActual() + "\",\"total\":" + cabecera.getTotal() + "}",
                 request);
         return guardada;
+    }
+
+    @Transactional
+    public void anularVenta(Integer codVenta, Usuario usuarioActual, HttpServletRequest request) {
+        VentaCabecera venta = ventaCabeceraRepository.findById(codVenta).orElseThrow();
+        if (!venta.getEstado()) {
+            throw new RuntimeException("La venta ya se encuentra anulada");
+        }
+
+        List<VentaDetalle> detalles = ventaDetalleRepository.findByVentaCodVenta(codVenta);
+        String docNro = venta.getTipoComprobante() + "-" + venta.getSerie() + "-" + venta.getNumeroCorrelativo();
+
+        for (VentaDetalle detalle : detalles) {
+            Producto producto = productoRepository.findById(detalle.getProducto().getCodProducto()).orElseThrow();
+
+            int stockUndAntes = producto.getCantidadUnidad();
+            int stockFraccAntes = producto.getCantidadFraccion();
+
+            if (detalle.getTipoVenta().equals("FRACCION")) {
+                producto.setCantidadFraccion(producto.getCantidadFraccion() + detalle.getCantidad());
+            } else {
+                producto.setCantidadUnidad(producto.getCantidadUnidad() + detalle.getCantidad());
+            }
+
+            productoRepository.save(producto);
+
+            Kardex kardex = new Kardex();
+            kardex.setProducto(producto);
+            kardex.setTipoOperacion(new TipoOperacion(3)); // Extorno
+            kardex.setCantidadInicial(detalle.getTipoVenta().equals("FRACCION") ? stockFraccAntes : stockUndAntes);
+            kardex.setCantidadMovimiento(detalle.getCantidad());
+            kardex.setCantidadFinal(detalle.getTipoVenta().equals("FRACCION")
+                    ? stockFraccAntes + detalle.getCantidad()
+                    : stockUndAntes + detalle.getCantidad());
+            kardex.setSaldoUnitario(producto.getCantidadUnidad());
+            kardex.setSaldoFraccionario(producto.getCantidadFraccion());
+            kardex.setCodDocumento(docNro);
+            kardex.setObservacion(detalle.getTipoVenta().equals("FRACCION")
+                    ? "[F] Extorno de venta"
+                    : "[U] Extorno de venta");
+            kardex.setUsuarioRegistro(usuarioActual);
+            kardexRepository.save(kardex);
+        }
+
+        venta.setEstado(false);
+        ventaCabeceraRepository.save(venta);
+
+        auditoriaService.registrar(usuarioActual, "Ventas", "VentaCabecera",
+                "DELETE", codVenta,
+                "{\"estado\":true}", "{\"estado\":false}",
+                request);
     }
 }

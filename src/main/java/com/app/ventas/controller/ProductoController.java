@@ -4,6 +4,7 @@ import com.app.ventas.entity.Producto;
 import com.app.ventas.entity.ProductoComposicion;
 import com.app.ventas.entity.Usuario;
 import com.app.ventas.service.CategoriaService;
+import com.app.ventas.service.PermisoService;
 import com.app.ventas.service.ProductoService;
 import com.app.ventas.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,22 +30,26 @@ public class ProductoController {
     private final ProductoService productoService;
     private final CategoriaService categoriaService;
     private final UsuarioService usuarioService;
+    private final PermisoService permisoService;
 
     public ProductoController(ProductoService productoService, CategoriaService categoriaService,
-                              UsuarioService usuarioService) {
+                              UsuarioService usuarioService, PermisoService permisoService) {
         this.productoService = productoService;
         this.categoriaService = categoriaService;
         this.usuarioService = usuarioService;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Authentication auth, Model model) {
+        if (!permisoService.tieneVer(auth, "Productos")) return "redirect:/inicio?error=sinPermiso";
         model.addAttribute("productos", productoService.listarActivos());
         return "productos/lista";
     }
 
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
+    public String nuevo(Authentication auth, Model model) {
+        if (!permisoService.tieneCrear(auth, "Productos")) return "redirect:/productos?error=sinPermiso";
         model.addAttribute("producto", new Producto());
         model.addAttribute("categorias", categoriaService.listarActivos());
         model.addAttribute("componentesDisponibles", productoService.listarPosiblesComponentes());
@@ -56,6 +61,9 @@ public class ProductoController {
                           @RequestParam(required = false) List<Integer> componenteId,
                           @RequestParam(required = false) List<Integer> componenteCantidad,
                           Authentication auth, HttpServletRequest request) {
+        boolean esNuevo = producto.getCodProducto() == null;
+        if (esNuevo && !permisoService.tieneCrear(auth, "Productos")) return "redirect:/productos?error=sinPermiso";
+        if (!esNuevo && !permisoService.tieneEditar(auth, "Productos")) return "redirect:/productos?error=sinPermiso";
         if (result.hasErrors()) {
             System.out.println("Validation errors during product save: " + result.getAllErrors());
             model.addAttribute("categorias", categoriaService.listarActivos());
@@ -63,12 +71,17 @@ public class ProductoController {
             return "productos/formulario";
         }
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
-        productoService.guardar(producto, componenteId, componenteCantidad, actual, request);
+        try {
+            productoService.guardar(producto, componenteId, componenteCantidad, actual, request);
+        } catch (RuntimeException e) {
+            return "redirect:/productos?error=" + e.getMessage();
+        }
         return "redirect:/productos";
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable Integer id, Model model) {
+    public String editar(@PathVariable Integer id, Authentication auth, Model model) {
+        if (!permisoService.tieneEditar(auth, "Productos")) return "redirect:/productos?error=sinPermiso";
         Producto producto = productoService.buscarPorId(id).orElseThrow();
         model.addAttribute("producto", producto);
         model.addAttribute("categorias", categoriaService.listarActivos());
@@ -82,6 +95,7 @@ public class ProductoController {
 
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Integer id, Authentication auth, HttpServletRequest request) {
+        if (!permisoService.tieneEliminar(auth, "Productos")) return "redirect:/productos?error=sinPermiso";
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
         productoService.eliminarLogico(id, actual, request);
         return "redirect:/productos";

@@ -1,6 +1,7 @@
 package com.app.ventas.controller;
 
 import com.app.ventas.entity.Usuario;
+import com.app.ventas.service.PermisoService;
 import com.app.ventas.service.RolService;
 import com.app.ventas.service.UsuarioService;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
@@ -24,20 +25,25 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
     private final RolService rolService;
+    private final PermisoService permisoService;
 
-    public UsuarioController(UsuarioService usuarioService, RolService rolService) {
+    public UsuarioController(UsuarioService usuarioService, RolService rolService,
+                             PermisoService permisoService) {
         this.usuarioService = usuarioService;
         this.rolService = rolService;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listar(Authentication auth, Model model) {
+        if (!permisoService.tieneVer(auth, "Usuarios")) return "redirect:/inicio?error=sinPermiso";
         model.addAttribute("usuarios", usuarioService.listarTodos());
         return "usuarios/lista";
     }
 
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
+    public String nuevo(Authentication auth, Model model) {
+        if (!permisoService.tieneCrear(auth, "Usuarios")) return "redirect:/usuarios?error=sinPermiso";
         model.addAttribute("user", new Usuario());
         model.addAttribute("roles", rolService.listarActivos());
         return "usuarios/formulario";
@@ -47,6 +53,8 @@ public class UsuarioController {
     public String guardar(@Valid @ModelAttribute("user") Usuario usuario, BindingResult result,
                           Model model, Authentication auth, HttpServletRequest request) {
         boolean esNuevo = usuario.getIdUsuario() == null;
+        if (esNuevo && !permisoService.tieneCrear(auth, "Usuarios")) return "redirect:/usuarios?error=sinPermiso";
+        if (!esNuevo && !permisoService.tieneEditar(auth, "Usuarios")) return "redirect:/usuarios?error=sinPermiso";
 
         if (esNuevo && (usuario.getPassword() == null || usuario.getPassword().isBlank())) {
             result.rejectValue("password", "error.usuario", "La contrasena es obligatoria");
@@ -66,7 +74,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable Integer id, Model model) {
+    public String editar(@PathVariable Integer id, Authentication auth, Model model) {
+        if (!permisoService.tieneEditar(auth, "Usuarios")) return "redirect:/usuarios?error=sinPermiso";
         model.addAttribute("user", usuarioService.buscarPorId(id).orElseThrow());
         model.addAttribute("roles", rolService.listarActivos());
         return "usuarios/formulario";
@@ -74,6 +83,7 @@ public class UsuarioController {
 
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Integer id, Authentication auth, HttpServletRequest request) {
+        if (!permisoService.tieneEliminar(auth, "Usuarios")) return "redirect:/usuarios?error=sinPermiso";
         Usuario actual = usuarioService.buscarPorUsuario(auth.getName()).orElseThrow();
         usuarioService.eliminarLogico(id, actual, request);
         return "redirect:/usuarios";
